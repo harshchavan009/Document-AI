@@ -371,3 +371,4 @@ This summary provides an explainable overview for evaluation:
 - [x] Frontend production bundle compiled and code-split under 400 kB per vendor chunk.
 - [x] Genuine application screenshots captured from running server.
 - [x] Zero em dashes across all code and documentation.
+

@@ -67,3 +67,4 @@ run().catch((err) => {
   console.error("Screenshot capture failed:", err);
   process.exit(1);
 });
+

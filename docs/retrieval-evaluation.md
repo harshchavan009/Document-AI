@@ -59,3 +59,4 @@ Through testing across clinical and technical document excerpts, chunks with cos
 - **Simulation:** Generated response text injected with hallucinated index `[99]`.
 - **Validation Engine:** `RAGService.extract_and_validate_citations()` cross-checked all bracketed numbers against the retrieved set.
 - **Observed System Output:** `[99]` was stripped; only verified citations `[1]` and `[2]` reached the user interface.
+

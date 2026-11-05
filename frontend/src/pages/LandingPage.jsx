@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   ArrowRight,
   CheckCircle2,
+  AlertCircle,
   Lock,
   Layers,
   BookOpen,

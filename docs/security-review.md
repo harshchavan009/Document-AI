@@ -63,3 +63,4 @@ The FastAPI application injects security headers on all responses:
 
 1. **OCR Limitation:** PyMuPDF extracts existing text streams from PDF pages. Scanned image-only PDFs without text layers are explicitly rejected with `Failed: Scanned PDF contains no extractable text. OCR is not enabled.`
 2. **Local Storage:** SQLite and ChromaDB data reside in `storage/` on local disk. For multi-node cloud deployments, persistent network volumes or managed cloud databases should be substituted.
+

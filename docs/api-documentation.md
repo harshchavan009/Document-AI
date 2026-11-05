@@ -244,3 +244,4 @@ All endpoints are prefixed with `/api`. Responses adhere to a consistent JSON st
 - `GET /api/chat/sessions?workspace_id={workspace_id}`: Lists prior conversations.
 - `GET /api/chat/sessions/{session_id}`: Retrieves full message history with citations.
 - `DELETE /api/chat/sessions/{session_id}`: Deletes a conversation session.
+

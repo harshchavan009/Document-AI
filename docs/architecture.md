@@ -165,3 +165,4 @@ Even without mandatory user accounts, multi-tenancy is enforced at the database 
 2. All workspace queries, document queries, file downloads, and vector queries require matching `session_id`.
 3. ChromaDB similarity searches apply strict filtering using `where={"$and": [{"workspace_id": active_workspace}, {"document_id": {"$in": selected_docs}}]}`.
 4. Attempting to access a document ID belonging to a different session results in an immediate HTTP 404 (or 403), tested and verified by automated security test suites.
+

@@ -78,3 +78,4 @@ We synthesize these reference principles into an original, purpose-built documen
 
 4. **Real Pipeline Transparency:**
    Document processing states reflect actual backend asynchronous stages: file validation, text extraction via PyMuPDF, recursive chunking, embedding generation via Google Gen AI, and persistent vector insertion into ChromaDB.
+

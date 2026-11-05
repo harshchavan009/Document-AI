@@ -165,3 +165,4 @@ When a user clicks "View in PDF Preview" from a citation card:
 - **Desktop (1280px+):** Full three-panel research layout with visible sources and document selection sidebars.
 - **Tablet (768px to 1279px):** Left document panel collapses into an off-canvas drawer. Research canvas and evidence inspector share the view or toggle via tabs.
 - **Mobile (< 768px):** Single-column stacked view with tab bar: `[Research | Sources (2) | Documents (3)]`. The composer remains fixed at the bottom with touch-friendly spacing.
+

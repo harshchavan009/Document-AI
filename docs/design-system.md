@@ -231,3 +231,4 @@ Transitions must respect `prefers-reduced-motion: reduce`.
 - Empty Document Library: Educational prompt with upload drop zone, accepted file formats, and instructions to get started. No fake charts or fake file counts.
 - Empty Research Canvas: Actionable guidance explaining how to select documents and submit a research question.
 - Loading Skeletons: High-fidelity layout skeletons that match the exact geometry of answer cards and document rows while real requests are in flight.
+

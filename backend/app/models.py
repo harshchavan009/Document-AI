@@ -113,3 +113,4 @@ class MessageCitation(Base):
     page_number = Column(Integer, default=1, nullable=False)
 
     message = relationship("ChatMessage", back_populates="citations")
+

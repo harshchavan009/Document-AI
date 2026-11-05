@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Canvas and Surfaces (Light Mode) */
+  --dm-bg-canvas: #FBFBFB;
+  --dm-bg-surface: #FFFFFF;
+  --dm-bg-surface-subtle: #F4F4F5;
+  --dm-bg-surface-elevated: #FFFFFF;
+  --dm-bg-hover: #F0F0F2;
+  --dm-bg-active: #E4E4E7;
+
+  /* Text & Content (Light Mode) */
+  --dm-text-primary: #18181B;
+  --dm-text-secondary: #52525B;
+  --dm-text-muted: #71717A;
+  --dm-text-disabled: #A1A1AA;
+  --dm-text-inverse: #FAFAFA;
+
+  /* Borders & Hairlines (Light Mode) */
+  --dm-border-default: #E4E4E7;
+  --dm-border-subtle: #F0F0F2;
+  --dm-border-strong: #D4D4D8;
+  --dm-border-focus: #4F46E5;
+
+  /* Brand Accent (Electric Indigo) */
+  --dm-accent: #4F46E5;
+  --dm-accent-hover: #4338CA;
+  --dm-accent-subtle: #EEF2FF;
+  --dm-accent-text: #3730A3;
+
+  /* Semantic Feedback */
+  --dm-success-bg: #ECFDF5;
+  --dm-success-border: #A7F3D0;
+  --dm-success-text: #065F46;
+
+  --dm-warning-bg: #FFFBEB;
+  --dm-warning-border: #FDE68A;
+  --dm-warning-text: #92400E;
+
+  --dm-error-bg: #FEF2F2;
+  --dm-error-border: #FECACA;
+  --dm-error-text: #991B1B;
+
+  --dm-info-bg: #F0F9FF;
+  --dm-info-border: #BAE6FD;
+  --dm-info-text: #075985;
+
+  /* Evidence Excerpt Highlight */
+  --dm-evidence-bg: #F8FAFC;
+  --dm-evidence-border: #CBD5E1;
+  --dm-evidence-highlight: #FEF08A;
+  --dm-evidence-text: #334155;
+}
+
+[data-theme="dark"] {
+  /* Canvas and Surfaces (Dark Mode) */
+  --dm-bg-canvas: #09090B;
+  --dm-bg-surface: #121215;
+  --dm-bg-surface-subtle: #18181B;
+  --dm-bg-surface-elevated: #1F1F23;
+  --dm-bg-hover: #222226;
+  --dm-bg-active: #27272A;
+
+  /* Text & Content (Dark Mode) */
+  --dm-text-primary: #FAFAFA;
+  --dm-text-secondary: #A1A1AA;
+  --dm-text-muted: #71717A;
+  --dm-text-disabled: #52525B;
+  --dm-text-inverse: #18181B;
+
+  /* Borders & Hairlines (Dark Mode) */
+  --dm-border-default: #27272A;
+  --dm-border-subtle: #1E1E22;
+  --dm-border-strong: #3F3F46;
+  --dm-border-focus: #6366F1;
+
+  /* Brand Accent (Electric Indigo in Dark) */
+  --dm-accent: #6366F1;
+  --dm-accent-hover: #818CF8;
+  --dm-accent-subtle: #1E1B4B;
+  --dm-accent-text: #C7D2FE;
+
+  /* Semantic Feedback */
+  --dm-success-bg: #064E3B;
+  --dm-success-border: #047857;
+  --dm-success-text: #A7F3D0;
+
+  --dm-warning-bg: #78350F;
+  --dm-warning-border: #B45309;
+  --dm-warning-text: #FDE68A;
+
+  --dm-error-bg: #7F1D1D;
+  --dm-error-border: #B91C1C;
+  --dm-error-text: #FECACA;
+
+  --dm-info-bg: #0C4A6E;
+  --dm-info-border: #0284C7;
+  --dm-info-text: #BAE6FD;
+
+  /* Evidence Excerpt Highlight */
+  --dm-evidence-bg: #111827;
+  --dm-evidence-border: #374151;
+  --dm-evidence-highlight: #713F12;
+  --dm-evidence-text: #E5E7EB;
+}
+
+/* Subtle clean scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--dm-border-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--dm-text-muted);
+}
+
+/* Accessible focus ring */
+*:focus-visible {
+  outline: 2px solid var(--dm-accent);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

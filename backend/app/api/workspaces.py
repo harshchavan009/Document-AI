@@ -124,3 +124,4 @@ def delete_workspace(workspace_id: str, request: Request, db: Session = Depends(
     db.delete(ws)
     db.commit()
     return {"success": True, "message": "Workspace deleted successfully"}
+

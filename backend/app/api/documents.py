@@ -155,3 +155,4 @@ def delete_document(document_id: str, db: Session = Depends(get_db)):
         "document_id": document_id,
         "message": "Document and associated vectors permanently removed"
     }
+

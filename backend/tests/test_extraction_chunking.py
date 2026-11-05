@@ -84,3 +84,4 @@ def test_chunking_boundaries_and_metadata_preservation():
         assert c["character_end"] > c["character_start"]
         assert len(c["text_content"]) > 0
         assert c["token_count"] > 0
+

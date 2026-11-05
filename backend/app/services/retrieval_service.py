@@ -108,3 +108,4 @@ class RetrievalService:
                 citation_index += 1
 
         return filtered, question
+

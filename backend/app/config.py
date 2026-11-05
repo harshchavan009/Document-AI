@@ -65,3 +65,4 @@ settings = Settings()
 os.makedirs(settings.STORAGE_DIR, exist_ok=True)
 os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
 os.makedirs(settings.CHROMA_DIR, exist_ok=True)
+

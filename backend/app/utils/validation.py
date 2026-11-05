@@ -18,3 +18,4 @@ def validate_file_metadata(filename: str, file_size: int) -> Tuple[bool, str]:
         return False, "File is empty (0 bytes)"
 
     return True, ""
+

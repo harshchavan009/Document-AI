@@ -159,3 +159,4 @@ class DocumentService:
 
         background_tasks.add_task(JobService.process_document, doc.id)
         return doc
+

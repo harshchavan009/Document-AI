@@ -107,3 +107,4 @@ def test_oversized_file_rejection(client, sample_workspace, monkeypatch):
     res_json = response.json()
     assert len(res_json["rejected"]) == 1
     assert "exceeds maximum permitted limit" in res_json["rejected"][0]["reason"]
+

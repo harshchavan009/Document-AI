@@ -241,3 +241,4 @@ class RAGService:
             "data": {"sources": validated_sources}
         }
         yield {"event": "done", "data": {}}
+

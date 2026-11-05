@@ -335,3 +335,4 @@ def delete_chat_session(session_id: str, db: Session = Depends(get_db)):
     db.delete(session_obj)
     db.commit()
     return {"success": True, "message": "Chat session deleted"}
+

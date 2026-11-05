@@ -114,3 +114,4 @@ def test_vector_store_persistence_and_query(tmp_path):
     assert results[0]["page_number"] == 1
     assert results[0]["filename"] == "biology.pdf"
     assert "powerhouse" in results[0]["text_content"]
+

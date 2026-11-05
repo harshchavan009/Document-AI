@@ -34,3 +34,4 @@ def format_context_block(sources: list) -> str:
         block = f"[SOURCE {idx}] (Document: {filename}, Page: {page})\n{text}\n[/SOURCE {idx}]"
         blocks.append(block)
     return "\n\n".join(blocks)
+

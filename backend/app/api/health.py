@@ -33,3 +33,4 @@ def get_health(db: Session = Depends(get_db)):
         vector_store=vector_status,
         timestamp=datetime.now(timezone.utc)
     )
+

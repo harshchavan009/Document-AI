@@ -89,3 +89,4 @@ def test_api_config_endpoint_returns_dynamic_configuration(client):
     assert data["relevance_threshold"] == 0.65
     assert data["embedding_model"] == "gemini-embedding-001"
     assert data["generation_model"] == "gemini-2.5-flash"
+

@@ -119,3 +119,4 @@ class EmbeddingService:
                     raise EmbeddingError(f"Failed to generate query embedding: {str(e)}")
 
         raise EmbeddingError("Exhausted retries while generating query embedding.")
+

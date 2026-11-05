@@ -23,3 +23,4 @@ def get_public_config():
         embedding_model=settings.EMBEDDING_MODEL,
         generation_model=settings.GENERATION_MODEL
     )
+

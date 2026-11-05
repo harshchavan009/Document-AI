@@ -27,3 +27,4 @@ def sanitize_filename(filename: str) -> str:
     clean = os.path.basename(filename)
     clean = clean.replace("..", "").replace("/", "").replace("\\", "")
     return clean[:255] if clean else "document"
+

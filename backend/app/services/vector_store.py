@@ -179,3 +179,4 @@ class VectorStoreService:
             collection.delete(where={"workspace_id": str(workspace_id)})
         except Exception as e:
             logger.warning(f"ChromaDB delete for workspace {workspace_id} raised: {str(e)}")
+

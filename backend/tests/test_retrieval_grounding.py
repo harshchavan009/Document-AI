@@ -159,3 +159,4 @@ def test_followup_query_rewriting():
     )
 
     assert rewritten == "What was the secondary endpoint efficacy for the Phase 2 clinical trial?"
+

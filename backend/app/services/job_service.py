@@ -141,3 +141,4 @@ class JobService:
                 pass
         finally:
             db.close()
+

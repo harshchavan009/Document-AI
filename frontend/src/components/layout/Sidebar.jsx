@@ -224,3 +224,4 @@ export function Sidebar({ collapsed, setCollapsed }) {
     </>
   );
 }
+

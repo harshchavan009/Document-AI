@@ -27,6 +27,15 @@ TEST_DB_URL = f"sqlite:///{os.path.join(TEST_STORAGE, 'test.db')}"
 engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Patch SessionLocal across backend modules for test database consistency
+import backend.app.database
+import backend.app.services.job_service
+import backend.app.api.chat
+
+backend.app.database.SessionLocal = TestingSessionLocal
+backend.app.services.job_service.SessionLocal = TestingSessionLocal
+backend.app.api.chat.SessionLocal = TestingSessionLocal
+
 
 @pytest.fixture(scope="session", autouse=True)
 def init_db():

@@ -165,6 +165,6 @@ Document-AI/
 ---
 
 ## 6. Current Phase Status
-- **Current Phase:** PHASE 3: Frontend
-- **Phase 3 Status:** Frontend implementation complete. React 18 SPA built with Vite, Tailwind CSS, Lucide React, and PDF.js. Fully responsive with dedicated dark/light mode token set, design system components (Button, StatusBadge, CitationMarker, EvidenceExcerpt, UploadDropZone, EmptyState, SkeletonLoader), Landing Page with real interactive UI preview and zero static data, Workspace Shell with collapsible navigation, Document Library with real-time status polling, Three-Panel AI Research Workspace with interactive inline citations and evidence inspector, and PDF.js document preview drawer. Production build verified (0 errors, code-split chunks under 400 kB). Awaiting user approval to proceed to Phase 4 (Integration).
+- **Current Phase:** PHASE 4: Integration
+- **Phase 4 Status:** Integration complete. FastAPI backend running on port 8001; Vite frontend dev server running on port 5173 with transparent /api proxying. Real document upload, magic-byte verification, page-by-page text extraction, sentence-aware chunking, live status tracking, document preview serving, and permanent deletion verified. All 23 backend unit and end-to-end integration tests passing. Awaiting user approval to proceed to Phase 5 (Quality Assurance and Security).
 

@@ -82,3 +82,4 @@ export function StatusBadge({ status, errorMessage, className = "" }) {
     </div>
   );
 }
+

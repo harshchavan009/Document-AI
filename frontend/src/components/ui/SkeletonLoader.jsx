@@ -51,3 +51,4 @@ export function SkeletonLoader({ type = "row", count = 3, className = "" }) {
     </div>
   );
 }
+

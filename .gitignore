@@ -1,0 +1,42 @@
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.test_venv/
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Node & Frontend
+node_modules/
+dist/
+build/
+.npm/
+
+# Storage, Uploads & Databases
+backend/storage/
+storage/
+*.sqlite
+*.sqlite3
+*.db
+chroma_db/
+chroma_storage/
+
+# System & OS
+.DS_Store
+Thumbs.db
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -56,3 +56,4 @@ def test_end_to_end_ingestion_pipeline_stages(client, sample_workspace, db_sessi
     # 5. Clean up document
     client.delete(f"/api/documents/{doc_id}")
     assert db_session.query(Document).filter(Document.id == doc_id).first() is None
+

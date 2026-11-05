@@ -14,12 +14,16 @@ import { useWorkspace } from "../../context/WorkspaceContext";
 import { Button } from "../ui/Button";
 import { BrandWordmark, BrandMark } from "../ui/BrandMark";
 
-export function Sidebar() {
+export function Sidebar({
+  collapsed = false,
+  setCollapsed,
+  mobileOpen = false,
+  onCloseMobile,
+}) {
   const { workspaces, activeWorkspace, switchWorkspace, createWorkspace } =
     useWorkspace();
   const location = useLocation();
 
-  const [collapsed, setCollapsed] = useState(false);
   const [showWsMenu, setShowWsMenu] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWsName, setNewWsName] = useState("");
@@ -51,16 +55,28 @@ export function Sidebar() {
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
   };
 
+  const handleNavClick = () => {
+    if (onCloseMobile) onCloseMobile();
+  };
+
   return (
     <>
+      {/* Mobile Drawer Backdrop */}
+      {mobileOpen && (
+        <div
+          onClick={onCloseMobile}
+          className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-xs z-40 animate-in fade-in duration-150"
+        />
+      )}
+
       <aside
-        className={`h-screen border-r border-border bg-surface flex flex-col shrink-0 transition-all duration-150 z-30 select-none ${
-          collapsed ? "w-14" : "w-60"
-        }`}
+        className={`fixed md:static inset-y-0 left-0 z-50 h-screen border-r border-border bg-surface flex flex-col shrink-0 transition-transform md:transition-all duration-200 select-none ${
+          mobileOpen ? "translate-x-0 w-64 shadow-2xl" : "-translate-x-full md:translate-x-0"
+        } ${collapsed ? "md:w-14" : "md:w-60"}`}
       >
         {/* Brand Header */}
         <div className="h-13 border-b border-border px-3.5 flex items-center justify-between">
-          <Link to="/" className="flex items-center min-w-0" title="DocuMind AI">
+          <Link to="/" onClick={handleNavClick} className="flex items-center min-w-0" title="DocuMind AI">
             {collapsed ? (
               <BrandMark size={20} className="text-accent mx-auto" />
             ) : (
@@ -68,15 +84,29 @@ export function Sidebar() {
             )}
           </Link>
 
-          <button
-            type="button"
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary transition-colors cursor-pointer"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label="Toggle sidebar"
-          >
-            <Menu className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-1">
+            {setCollapsed && (
+              <button
+                type="button"
+                onClick={() => setCollapsed(!collapsed)}
+                className="hidden md:inline-flex p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary transition-colors cursor-pointer"
+                title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                <BrandMark size={14} className="opacity-40" />
+              </button>
+            )}
+
+            {onCloseMobile && (
+              <button
+                type="button"
+                onClick={onCloseMobile}
+                className="md:hidden p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary transition-colors"
+                aria-label="Close menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Workspace Switcher */}
@@ -150,6 +180,7 @@ export function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={handleNavClick}
                 className={`flex items-center gap-2.5 py-1.5 rounded-[5px] text-xs transition-colors ${
                   isActive
                     ? "bg-accent-subtle/80 text-content-primary font-semibold border-l-2 border-accent pl-2.5 pr-2"

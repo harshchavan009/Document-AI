@@ -160,3 +160,23 @@ def test_followup_query_rewriting():
 
     assert rewritten == "What was the secondary endpoint efficacy for the Phase 2 clinical trial?"
 
+
+def test_suggested_questions_endpoint(client, sample_workspace):
+    """
+    Verifies that the /api/chat/suggested-questions endpoint returns 3 questions.
+    """
+    payload = {
+        "workspace_id": sample_workspace.id,
+        "document_ids": []
+    }
+    response = client.post("/api/chat/suggested-questions", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "questions" in data
+    assert isinstance(data["questions"], list)
+    assert len(data["questions"]) == 3
+    for q in data["questions"]:
+        assert isinstance(q, str)
+        assert len(q) > 0
+
+

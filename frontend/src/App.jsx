@@ -12,6 +12,7 @@ import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { DesignSystemPage } from "./pages/DesignSystemPage";
+import { DocumentViewerPage } from "./pages/DocumentViewerPage";
 import { CommandPalette } from "./components/ui/CommandPalette";
 
 export default function App() {
@@ -44,6 +45,10 @@ export default function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
+
+            {/* Document Viewer Dedicated Route */}
+            <Route path="/documents/:id" element={<DocumentViewerPage />} />
+            <Route path="/workspace/documents/:id" element={<DocumentViewerPage />} />
 
             {/* Application Workspace Routes */}
             <Route path="/workspace" element={<WorkspaceLayout />}>

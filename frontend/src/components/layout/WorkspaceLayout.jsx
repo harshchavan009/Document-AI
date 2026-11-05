@@ -7,6 +7,7 @@ import { api } from "../../api/client";
 
 export function WorkspaceLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [degradedStatus, setDegradedStatus] = useState(null);
 
   useEffect(() => {
@@ -14,7 +15,7 @@ export function WorkspaceLayout() {
     async function checkHealth() {
       try {
         const res = await api.getHealth();
-        if (isMounted && res.status !== "ok") {
+        if (isMounted && res.status !== "healthy" && res.status !== "ok") {
           setDegradedStatus(
             res.detail || "System is operating with degraded performance."
           );
@@ -35,7 +36,12 @@ export function WorkspaceLayout() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-canvas">
-      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <Sidebar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        mobileOpen={mobileMenuOpen}
+        onCloseMobile={() => setMobileMenuOpen(false)}
+      />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Only shown if service is actually degraded */}
         {degradedStatus && (
@@ -45,7 +51,7 @@ export function WorkspaceLayout() {
           </div>
         )}
 
-        <Header onToggleSidebar={() => setCollapsed(!collapsed)} />
+        <Header onToggleSidebar={() => setMobileMenuOpen((v) => !v)} />
 
         <main className="flex-1 overflow-y-auto">
           <Outlet />

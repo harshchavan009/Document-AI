@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Sun, Moon, Layers, ChevronRight, Search, ExternalLink } from "lucide-react";
+import { Sun, Moon, Layers, ChevronRight, Search, ExternalLink, Menu } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { useWorkspace } from "../../context/WorkspaceContext";
 
@@ -23,18 +23,29 @@ export function Header({ onToggleSidebar }) {
 
   return (
     <header className="h-13 border-b border-border bg-surface px-4 sm:px-6 flex items-center justify-between shrink-0">
-      {/* Breadcrumbs */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-xs font-medium text-content-secondary">
+      {/* Breadcrumbs & Mobile Menu Toggle */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          className="md:hidden p-1.5 -ml-1 rounded text-content-secondary hover:text-content-primary hover:bg-surface-subtle transition-colors"
+          aria-label="Toggle navigation menu"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+
+        <div className="flex items-center gap-2 text-xs font-medium text-content-secondary min-w-0">
           <Link
             to="/workspace"
-            className="hover:text-content-primary transition-colors flex items-center gap-1.5"
+            className="hover:text-content-primary transition-colors flex items-center gap-1.5 shrink-0"
           >
             <Layers className="w-3.5 h-3.5 text-accent" />
-            <span className="font-semibold text-content-primary">{activeWorkspace?.name || "Default Workspace"}</span>
+            <span className="font-semibold text-content-primary truncate max-w-[120px] sm:max-w-none">
+              {activeWorkspace?.name || "Default Workspace"}
+            </span>
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-content-muted" />
-          <span className="text-content-secondary">{getBreadcrumbs()}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-content-muted shrink-0" />
+          <span className="text-content-secondary truncate">{getBreadcrumbs()}</span>
         </div>
       </div>
 

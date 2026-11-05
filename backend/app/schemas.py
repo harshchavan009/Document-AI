@@ -159,3 +159,12 @@ class ChatSessionDetailResponse(BaseModel):
     updated_at: datetime
     messages: List[ChatMessageResponse]
 
+
+
+class SuggestedQuestionsRequest(BaseModel):
+    workspace_id: str
+    document_ids: Optional[List[str]] = None
+
+
+class SuggestedQuestionsResponse(BaseModel):
+    questions: List[str]

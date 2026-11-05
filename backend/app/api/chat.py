@@ -9,7 +9,9 @@ from backend.app.models import (
     Workspace,
     ChatSession,
     ChatMessage,
-    MessageCitation
+    MessageCitation,
+    Document,
+    DocumentChunk
 )
 from backend.app.schemas import (
     QueryRequest,
@@ -18,8 +20,11 @@ from backend.app.schemas import (
     RetrievalMetadata,
     ChatSessionResponse,
     ChatSessionDetailResponse,
-    ChatMessageResponse
+    ChatMessageResponse,
+    SuggestedQuestionsRequest,
+    SuggestedQuestionsResponse
 )
+from backend.app.config import settings
 from backend.app.services.rag_service import RAGService
 
 router = APIRouter(prefix="/chat", tags=["Chat & RAG"])
@@ -292,11 +297,15 @@ def get_chat_session(session_id: str, db: Session = Depends(get_db)):
     formatted_messages = []
     for msg in messages:
         citations = []
+        # Pre-load document map for citation filenames
+        doc_ids = {c.document_id for c in msg.citations}
+        docs_map = {d.id: d.filename for d in db.query(Document).filter(Document.id.in_(doc_ids)).all()} if doc_ids else {}
+
         for c in msg.citations:
             citations.append(CitationItem(
                 citation_index=c.citation_index,
                 document_id=c.document_id,
-                filename="Source Document",
+                filename=docs_map.get(c.document_id, "Source Document"),
                 page_number=c.page_number,
                 chunk_id=c.chunk_id,
                 excerpt=c.excerpt,
@@ -336,3 +345,70 @@ def delete_chat_session(session_id: str, db: Session = Depends(get_db)):
     db.commit()
     return {"success": True, "message": "Chat session deleted"}
 
+
+
+
+@router.post("/suggested-questions", response_model=SuggestedQuestionsResponse)
+def get_suggested_questions(payload: SuggestedQuestionsRequest, db: Session = Depends(get_db)):
+    """
+    Generates 3 contextual, grounded research questions based on the active documents.
+    """
+    workspace = db.query(Workspace).filter(Workspace.id == payload.workspace_id).first()
+    if not workspace:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workspace not found"
+        )
+
+    doc_query = db.query(Document).filter(
+        Document.workspace_id == payload.workspace_id,
+        Document.status == "Ready"
+    )
+    if payload.document_ids and len(payload.document_ids) > 0:
+        doc_query = doc_query.filter(Document.id.in_(payload.document_ids))
+    docs = doc_query.all()
+
+    if not docs:
+        return SuggestedQuestionsResponse(questions=[
+            "What are the main topics discussed in this workspace?",
+            "Can you summarize the documents uploaded so far?",
+            "What methodologies or findings are presented?"
+        ])
+
+    doc_ids = [d.id for d in docs]
+    chunks = db.query(DocumentChunk).filter(DocumentChunk.document_id.in_(doc_ids)).order_by(DocumentChunk.chunk_index.asc()).limit(4).all()
+    sample_text = "\n\n".join([c.text_content for c in chunks])[:2500]
+
+    if settings.GEMINI_API_KEY and sample_text:
+        try:
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            prompt = (
+                "You are an academic research assistant. Based strictly on the following excerpt from the user's documents, "
+                "propose exactly 3 concise, highly specific research questions that can be answered from this text. "
+                "Output ONLY a valid JSON list of 3 strings, e.g. [\"question 1\", \"question 2\", \"question 3\"].\n\n"
+                f"Document Excerpt:\n{sample_text}"
+            )
+            response = client.models.generate_content(
+                model=settings.GENERATION_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.2)
+            )
+            raw = response.text.strip()
+            if "```json" in raw:
+                raw = raw.split("```json")[1].split("```")[0].strip()
+            elif "```" in raw:
+                raw = raw.split("```")[1].split("```")[0].strip()
+            parsed = json.loads(raw)
+            if isinstance(parsed, list) and len(parsed) >= 1:
+                return SuggestedQuestionsResponse(questions=[str(q).strip() for q in parsed[:3]])
+        except Exception as e:
+            logger.warning(f"Dynamic suggested questions generation fallback: {e}")
+
+    first_title = docs[0].filename
+    return SuggestedQuestionsResponse(questions=[
+        f"What is the primary contribution or objective of {first_title}?",
+        f"What methodologies or system architectures are described in {first_title}?",
+        f"What quantitative results or findings are reported in {first_title}?"
+    ])

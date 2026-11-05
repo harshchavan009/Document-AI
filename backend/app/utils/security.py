@@ -13,7 +13,9 @@ def generate_session_token() -> str:
 
 
 def get_or_create_session_id(request: Request) -> str:
-    """Retrieves session id from signed cookie or header, or generates a new one."""
+    """Retrieves session id from request state, cookie, or header."""
+    if hasattr(request.state, "session_id") and request.state.session_id:
+        return request.state.session_id
     session_id = request.cookies.get(SESSION_COOKIE_NAME)
     if not session_id:
         session_id = request.headers.get("X-Session-ID")

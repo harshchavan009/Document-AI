@@ -66,13 +66,15 @@ async def security_and_session_middleware(request: Request, call_next):
     start_time = time.time()
 
     # Session token check
-    existing_session = request.cookies.get(SESSION_COOKIE_NAME)
+    existing_session = request.cookies.get(SESSION_COOKIE_NAME) or request.headers.get("X-Session-ID")
     is_new_session = False
     session_id = existing_session
 
     if not session_id or len(session_id) < 16:
         session_id = generate_session_token()
         is_new_session = True
+
+    request.state.session_id = session_id
 
     response: Response = await call_next(request)
 

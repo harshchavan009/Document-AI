@@ -16,19 +16,16 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 
+import { BrandWordmark } from "../components/ui/BrandMark";
+
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-canvas text-content-primary flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-canvas text-content-primary flex flex-col">
       {/* Navigation */}
-      <nav className="h-16 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-8 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-md bg-accent flex items-center justify-center text-white font-bold text-sm shadow-xs">
-            D
-          </div>
-          <span className="font-bold text-base tracking-tight text-content-primary">
-            DocuMind AI
-          </span>
-        </div>
+      <nav className="h-14 border-b border-border bg-surface/80 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-8 flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <BrandWordmark size={20} />
+        </Link>
 
         <div className="hidden md:flex items-center gap-6 text-xs font-medium text-content-secondary">
           <a href="#how-it-works" className="hover:text-content-primary transition-colors">

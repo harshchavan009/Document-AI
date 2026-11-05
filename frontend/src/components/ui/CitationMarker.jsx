@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileText } from "lucide-react";
+import { FileText, ArrowRight } from "lucide-react";
 
 export function CitationMarker({
   index,
@@ -23,7 +23,7 @@ export function CitationMarker({
   };
 
   return (
-    <span className="relative inline-block mx-0.5 align-baseline">
+    <span className="relative inline-block mx-0.5 align-baseline select-none">
       <button
         type="button"
         tabIndex={0}
@@ -33,34 +33,38 @@ export function CitationMarker({
         onMouseLeave={() => setShowPopover(false)}
         onFocus={() => setShowPopover(true)}
         onBlur={() => setShowPopover(false)}
-        className={`inline-flex items-center justify-center font-mono text-[11px] font-semibold px-1 py-0.5 rounded-xs transition-all cursor-pointer ${
+        className={`inline-flex items-center justify-center tabular-nums text-[10px] font-bold px-1.5 py-0.2 rounded-[3px] transition-all cursor-pointer border ${
           active
-            ? "bg-accent text-white ring-2 ring-accent"
-            : "bg-accent-subtle text-accent-text hover:bg-accent hover:text-white border border-accent/20"
+            ? "bg-citation-hover text-white border-citation-hover ring-1 ring-citation-hover shadow-xs"
+            : "bg-citation border-citation-border text-citation-text hover:bg-citation-hover hover:text-white hover:border-citation-hover"
         } ${className}`}
-        aria-label={`View citation ${index}`}
+        aria-label={`View citation [${index}]`}
+        data-citation-index={index}
       >
         [{index}]
       </button>
 
+      {/* Popover preview on hover or focus */}
       {showPopover && citation && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-40 w-72 p-3 bg-surface border border-border rounded-md shadow-lg text-left pointer-events-none">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-content-primary mb-1 border-b border-border/60 pb-1.5">
-            <FileText className="w-3.5 h-3.5 text-accent shrink-0" />
-            <span className="truncate">{citation.filename || "Source Document"}</span>
-            <span className="ml-auto text-[10px] text-content-muted shrink-0">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 p-3 bg-surface border border-border rounded-[6px] shadow-lg text-left pointer-events-none animate-in fade-in zoom-in-95 duration-100">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-content-primary mb-1.5 border-b border-border pb-1.5">
+            <FileText className="w-3.5 h-3.5 text-citation-text shrink-0" />
+            <span className="truncate font-semibold">{citation.filename || "Document"}</span>
+            <span className="ml-auto text-[11px] text-content-muted shrink-0 tabular-nums">
               Page {citation.page_number || 1}
             </span>
           </div>
-          <p className="font-mono text-[11px] leading-relaxed text-content-secondary line-clamp-3 italic">
+
+          <p className="text-[12px] font-reading leading-relaxed text-content-secondary line-clamp-3 italic">
             "{citation.excerpt}"
           </p>
-          <div className="mt-2 text-[10px] text-accent font-medium">
-            Click to inspect evidence in sidebar
+
+          <div className="mt-2 pt-1 border-t border-border/40 flex items-center justify-between text-[10px] text-citation-text font-medium">
+            <span>Click to view page in reader</span>
+            <ArrowRight className="w-3 h-3" />
           </div>
         </div>
       )}
     </span>
   );
 }
-

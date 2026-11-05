@@ -1,39 +1,62 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/source-serif-4/400.css";
+@import "@fontsource/source-serif-4/600.css";
+@import "@fontsource/source-serif-4/400-italic.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Canvas and Surfaces (Light Mode) */
-  --dm-bg-canvas: #FBFBFB;
+  /* Canvas and Surfaces (Warm Paper Light Mode Default) */
+  --dm-bg-canvas: #FBF9F5;
   --dm-bg-surface: #FFFFFF;
-  --dm-bg-surface-subtle: #F4F4F5;
+  --dm-bg-surface-subtle: #F3F0EB;
   --dm-bg-surface-elevated: #FFFFFF;
-  --dm-bg-hover: #F0F0F2;
-  --dm-bg-active: #E4E4E7;
+  --dm-bg-hover: #EDE9E3;
+  --dm-bg-active: #E3DDD5;
 
-  /* Text & Content (Light Mode) */
-  --dm-text-primary: #18181B;
-  --dm-text-secondary: #52525B;
-  --dm-text-muted: #71717A;
-  --dm-text-disabled: #A1A1AA;
-  --dm-text-inverse: #FAFAFA;
+  /* Text and Content (Light Mode Ink) */
+  --dm-text-primary: #1A1A1E;
+  --dm-text-secondary: #4A4B53;
+  --dm-text-muted: #747682;
+  --dm-text-disabled: #A3A6B2;
+  --dm-text-inverse: #FBF9F5;
 
-  /* Borders & Hairlines (Light Mode) */
-  --dm-border-default: #E4E4E7;
-  --dm-border-subtle: #F0F0F2;
-  --dm-border-strong: #D4D4D8;
-  --dm-border-focus: #4F46E5;
+  /* Borders and Hairlines (Light Mode) */
+  --dm-border-default: #E5E0D8;
+  --dm-border-subtle: #EFECE6;
+  --dm-border-strong: #D1C9BE;
+  --dm-border-focus: #1B4332;
 
-  /* Brand Accent (Electric Indigo) */
-  --dm-accent: #4F46E5;
-  --dm-accent-hover: #4338CA;
-  --dm-accent-subtle: #EEF2FF;
-  --dm-accent-text: #3730A3;
+  /* Primary Brand Accent: Forest Pine / Deep Emerald */
+  --dm-accent: #1B4332;
+  --dm-accent-hover: #143326;
+  --dm-accent-subtle: #EBF4EE;
+  --dm-accent-text: #1B4332;
+  --dm-accent-contrast: #FFFFFF;
+
+  /* Functional Citation Accent: Warm Ember / Terracotta */
+  --dm-citation-bg: #FBF0EB;
+  --dm-citation-border: #E8C5B8;
+  --dm-citation-text: #9C381E;
+  --dm-citation-hover: #852F18;
+
+  /* Evidence Card & Quoted Passage */
+  --dm-evidence-bg: #F7F5F0;
+  --dm-evidence-border: #DED8CE;
+  --dm-evidence-text: #2C2D35;
+  --dm-evidence-highlight: rgba(254, 240, 138, 0.45);
 
   /* Semantic Feedback */
-  --dm-success-bg: #ECFDF5;
-  --dm-success-border: #A7F3D0;
-  --dm-success-text: #065F46;
+  --dm-success-bg: #F0FDF4;
+  --dm-success-border: #BBF7D0;
+  --dm-success-text: #166534;
 
   --dm-warning-bg: #FFFBEB;
   --dm-warning-border: #FDE68A;
@@ -46,97 +69,123 @@
   --dm-info-bg: #F0F9FF;
   --dm-info-border: #BAE6FD;
   --dm-info-text: #075985;
-
-  /* Evidence Excerpt Highlight */
-  --dm-evidence-bg: #F8FAFC;
-  --dm-evidence-border: #CBD5E1;
-  --dm-evidence-highlight: #FEF08A;
-  --dm-evidence-text: #334155;
 }
 
 [data-theme="dark"] {
-  /* Canvas and Surfaces (Dark Mode) */
-  --dm-bg-canvas: #09090B;
-  --dm-bg-surface: #121215;
-  --dm-bg-surface-subtle: #18181B;
-  --dm-bg-surface-elevated: #1F1F23;
-  --dm-bg-hover: #222226;
-  --dm-bg-active: #27272A;
+  /* Canvas and Surfaces (Obsidian Dark Mode) */
+  --dm-bg-canvas: #0C0D0E;
+  --dm-bg-surface: #141618;
+  --dm-bg-surface-subtle: #1B1E22;
+  --dm-bg-surface-elevated: #202428;
+  --dm-bg-hover: #262B30;
+  --dm-bg-active: #2E343B;
 
-  /* Text & Content (Dark Mode) */
-  --dm-text-primary: #FAFAFA;
-  --dm-text-secondary: #A1A1AA;
-  --dm-text-muted: #71717A;
-  --dm-text-disabled: #52525B;
-  --dm-text-inverse: #18181B;
+  /* Text and Content (Dark Mode Ivory) */
+  --dm-text-primary: #E6E8EC;
+  --dm-text-secondary: #A3A7AF;
+  --dm-text-muted: #6E737D;
+  --dm-text-disabled: #4B505A;
+  --dm-text-inverse: #0C0D0E;
 
-  /* Borders & Hairlines (Dark Mode) */
-  --dm-border-default: #27272A;
-  --dm-border-subtle: #1E1E22;
-  --dm-border-strong: #3F3F46;
-  --dm-border-focus: #6366F1;
+  /* Borders and Hairlines (Dark Mode) */
+  --dm-border-default: #22252A;
+  --dm-border-subtle: #191C20;
+  --dm-border-strong: #32373F;
+  --dm-border-focus: #40916C;
 
-  /* Brand Accent (Electric Indigo in Dark) */
-  --dm-accent: #6366F1;
-  --dm-accent-hover: #818CF8;
-  --dm-accent-subtle: #1E1B4B;
-  --dm-accent-text: #C7D2FE;
+  /* Primary Brand Accent: Muted Emerald */
+  --dm-accent: #40916C;
+  --dm-accent-hover: #52B788;
+  --dm-accent-subtle: #132A1F;
+  --dm-accent-text: #74C69D;
+  --dm-accent-contrast: #0C0D0E;
+
+  /* Functional Citation Accent: Muted Ember */
+  --dm-citation-bg: #2E150F;
+  --dm-citation-border: #6E2F20;
+  --dm-citation-text: #E26D4D;
+  --dm-citation-hover: #F08C70;
+
+  /* Evidence Card & Quoted Passage */
+  --dm-evidence-bg: #17191C;
+  --dm-evidence-border: #282C32;
+  --dm-evidence-text: #D1D5DB;
+  --dm-evidence-highlight: rgba(133, 77, 14, 0.40);
 
   /* Semantic Feedback */
-  --dm-success-bg: #064E3B;
-  --dm-success-border: #047857;
-  --dm-success-text: #A7F3D0;
+  --dm-success-bg: #052E16;
+  --dm-success-border: #14532D;
+  --dm-success-text: #4ADE80;
 
-  --dm-warning-bg: #78350F;
-  --dm-warning-border: #B45309;
-  --dm-warning-text: #FDE68A;
+  --dm-warning-bg: #451A03;
+  --dm-warning-border: #78350F;
+  --dm-warning-text: #FBBF24;
 
-  --dm-error-bg: #7F1D1D;
-  --dm-error-border: #B91C1C;
-  --dm-error-text: #FECACA;
+  --dm-error-bg: #450A0A;
+  --dm-error-border: #7F1D1D;
+  --dm-error-text: #F87171;
 
-  --dm-info-bg: #0C4A6E;
-  --dm-info-border: #0284C7;
-  --dm-info-text: #BAE6FD;
-
-  /* Evidence Excerpt Highlight */
-  --dm-evidence-bg: #111827;
-  --dm-evidence-border: #374151;
-  --dm-evidence-highlight: #713F12;
-  --dm-evidence-text: #E5E7EB;
+  --dm-info-bg: #082F49;
+  --dm-info-border: #0C4A6E;
+  --dm-info-text: #38BDF8;
 }
 
-/* Subtle clean scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Global Reset and Typography Defaults */
+html {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+body {
+  background-color: var(--dm-bg-canvas);
+  color: var(--dm-text-primary);
+  line-height: 1.5;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--dm-border-strong);
-  border-radius: 3px;
+/* Tabular Figures for Numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--dm-text-muted);
+/* Reading Typography for Answers */
+.font-reading {
+  font-family: "Source Serif 4", Georgia, Cambria, serif;
+  font-optical-sizing: auto;
 }
 
-/* Accessible focus ring */
+/* Code Typography strictly for IDs and Specs */
+.font-code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* Selection Color: Neutral Paper / Pine */
+::selection {
+  background-color: rgba(27, 67, 50, 0.18);
+  color: var(--dm-text-primary);
+}
+
+[data-theme="dark"] ::selection {
+  background-color: rgba(64, 145, 108, 0.32);
+  color: #FFFFFF;
+}
+
+/* Focus Visible Management */
 *:focus-visible {
-  outline: 2px solid var(--dm-accent);
+  outline: 2px solid var(--dm-border-focus);
   outline-offset: 1px;
 }
 
+/* Accessibility: Honour Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
-

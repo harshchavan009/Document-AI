@@ -172,5 +172,7 @@ Document-AI/
 - **Phase 4 (System Integration):** Complete. Live client-server integration verified, 23 automated tests passing, end-to-end ingestion and chat validated.
 - **Phase 5 (QA & Security Auditing):** Complete. Dependency audits documented, secret scan passed, retrieval calibration evaluated, security review published.
 - **Phase 6 (Documentation & Deployment):** Complete. Production `README.md`, genuine headless Chrome screenshots (`docs/screenshots/`), deployment guide, and internship evaluation summary finalized.
+- **Redesign Phase R1 (Foundations):** Complete. Implemented Forest Pine and Warm Ember tokens, self-hosted Source Serif 4 and Inter typography, original SVG BrandMark and Wordmark, base components (Button, IconButton, StatusDot, CitationMarker, EvidenceExcerpt, SourceCard, EmptyState, CommandPalette), and `/design-system` showcase route. Verified with 23 backend tests and full frontend build.
+
 
 

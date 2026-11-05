@@ -5,7 +5,7 @@ import { Button } from "../components/ui/Button";
 
 export function DocsPage() {
   return (
-    <div className="min-h-screen bg-canvas text-content-primary p-4 sm:p-8 max-w-4xl mx-auto space-y-10 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-canvas text-content-primary p-4 sm:p-8 max-w-4xl mx-auto space-y-10">
       {/* Header */}
       <div className="flex items-center justify-between pb-6 border-b border-border">
         <div className="flex items-center gap-3">

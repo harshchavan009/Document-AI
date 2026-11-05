@@ -17,31 +17,32 @@ export function EvidenceExcerpt({
   return (
     <div
       id={`evidence-citation-${citation.citation_index}`}
-      className={`p-3.5 rounded-md border transition-all ${
+      className={`p-3.5 rounded-[6px] border transition-all ${
         active
-          ? "bg-accent-subtle/50 border-accent shadow-sm ring-1 ring-accent"
-          : "bg-surface border-border hover:border-border-strong"
+          ? "bg-evidence-bg border-citation-text shadow-sm ring-1 ring-citation-text"
+          : "bg-evidence-bg/70 border-evidence-border hover:border-border-strong hover:bg-evidence-bg"
       } ${className}`}
     >
-      <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-border/50 text-xs">
+      {/* Header bar: Citation token, Document title, Page number */}
+      <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-evidence-border/60 text-xs">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="inline-flex items-center justify-center w-4 h-4 rounded-xs bg-accent text-white font-mono text-[10px] font-bold shrink-0">
+          <span className="inline-flex items-center justify-center w-4 h-4 rounded-[3px] bg-citation border border-citation-border text-citation-text text-[10px] font-bold tabular-nums shrink-0">
             {citation.citation_index}
           </span>
           <FileText className="w-3.5 h-3.5 text-content-muted shrink-0" />
-          <span className="font-medium text-content-primary truncate">
+          <span className="font-semibold text-content-primary truncate text-xs">
             {citation.filename || "Document"}
           </span>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] font-mono font-medium px-1.5 py-0.5 rounded bg-surface-subtle text-content-secondary border border-border">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-[4px] bg-surface text-content-secondary border border-border tabular-nums">
             Page {citation.page_number || 1}
           </span>
           {relevanceDisplay && (
             <span
-              title="Cosine similarity confidence score"
-              className="text-[10px] font-mono text-semantic-success-text bg-semantic-success-bg px-1 py-0.5 rounded border border-semantic-success-border"
+              title="Cosine similarity confidence"
+              className="text-[10px] font-medium text-semantic-success-text bg-semantic-success-bg px-1 py-0.5 rounded-[3px] border border-semantic-success-border tabular-nums"
             >
               {(relevanceDisplay * 100).toFixed(0)}% match
             </span>
@@ -49,26 +50,28 @@ export function EvidenceExcerpt({
         </div>
       </div>
 
-      <div className="bg-evidence-bg border border-evidence-border/50 rounded p-2.5 my-2">
-        <p className="font-mono text-xs leading-relaxed text-evidence-text italic break-words">
+      {/* Quoted passage body in Source Serif 4 */}
+      <div className="p-2.5 my-1.5 rounded-[4px] bg-surface border border-evidence-border/40">
+        <blockquote className="font-reading text-[13px] leading-relaxed text-content-primary italic break-words">
           "{citation.excerpt}"
-        </p>
+        </blockquote>
       </div>
 
-      <div className="mt-2.5 flex items-center justify-between pt-1">
-        <div className="flex items-center gap-1 text-[11px] text-content-muted font-mono">
+      {/* Footer bar: Verification marker and View in Reader action */}
+      <div className="mt-2 flex items-center justify-between pt-1 text-[11px]">
+        <div className="flex items-center gap-1 text-content-muted">
           <CheckCircle2 className="w-3 h-3 text-semantic-success-text" />
-          <span>Validated source</span>
+          <span>Server-verified ground truth</span>
         </div>
 
         {onOpenPreview && (
           <button
             type="button"
-            onClick={() => onOpenPreview(citation)}
-            className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors"
+            onClick={() => onOpenPreview(citation.document_id, citation.page_number)}
+            className="inline-flex items-center gap-1 text-accent hover:text-accent-hover font-medium cursor-pointer"
           >
-            <span>Preview in document</span>
-            <ArrowUpRight className="w-3 h-3" />
+            <span>Inspect in Reader</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
@@ -76,3 +79,40 @@ export function EvidenceExcerpt({
   );
 }
 
+export function SourceCard({
+  citation,
+  active = false,
+  onClick,
+  className = "",
+}) {
+  if (!citation) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-start gap-2.5 p-2 rounded-[5px] border text-left transition-colors cursor-pointer ${
+        active
+          ? "bg-surface border-citation-text ring-1 ring-citation-text"
+          : "bg-surface/80 border-border hover:bg-surface hover:border-border-strong"
+      } ${className}`}
+    >
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-[3px] bg-citation border border-citation-border text-citation-text text-[10px] font-bold tabular-nums shrink-0 mt-0.5">
+        {citation.citation_index}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-1">
+          <span className="text-xs font-semibold text-content-primary truncate">
+            {citation.filename}
+          </span>
+          <span className="text-[10px] text-content-muted shrink-0 tabular-nums">
+            p. {citation.page_number || 1}
+          </span>
+        </div>
+        <p className="text-[11px] font-reading text-content-secondary line-clamp-1 italic mt-0.5">
+          "{citation.excerpt}"
+        </p>
+      </div>
+    </button>
+  );
+}

@@ -258,3 +258,4 @@ export function CommandPalette({ isOpen, onClose }) {
     </div>
   );
 }
+

@@ -72,3 +72,4 @@ export function StatusDot({ status, errorMessage, showText = true, className = "
 
 // Backward-compatible alias for existing imports
 export const StatusBadge = StatusDot;
+

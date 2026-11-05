@@ -130,6 +130,16 @@ export const api = {
     });
   },
 
+  async ingestSampleDocument(workspaceId) {
+    const formData = new FormData();
+    formData.append("workspace_id", workspaceId);
+    const res = await fetch(`${BASE_URL}/documents/sample`, {
+      method: "POST",
+      body: formData,
+    });
+    return handleResponse(res);
+  },
+
   async deleteDocument(documentId) {
     const res = await fetch(`${BASE_URL}/documents/${documentId}`, {
       method: "DELETE",

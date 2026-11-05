@@ -108,3 +108,14 @@ def test_oversized_file_rejection(client, sample_workspace, monkeypatch):
     assert len(res_json["rejected"]) == 1
     assert "exceeds maximum permitted limit" in res_json["rejected"][0]["reason"]
 
+
+
+def test_ingest_sample_document(client, sample_workspace):
+    """Verifies that the bundled sample document can be ingested via POST /api/documents/sample."""
+    data = {"workspace_id": sample_workspace.id}
+    response = client.post("/api/documents/sample", data=data)
+    assert response.status_code == 201
+    res_json = response.json()
+    assert res_json["filename"] == "Attention_Is_All_You_Need.txt"
+    assert res_json["status"] == "Uploaded"
+    assert res_json["file_size"] > 0

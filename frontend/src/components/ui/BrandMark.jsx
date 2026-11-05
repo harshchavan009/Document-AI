@@ -70,3 +70,4 @@ export function BrandWordmark({ size = 20, className = "" }) {
     </div>
   );
 }
+

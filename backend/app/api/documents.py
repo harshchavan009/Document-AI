@@ -53,6 +53,25 @@ async def upload_documents(
     return DocumentUploadResponse(uploaded=uploaded, rejected=rejected)
 
 
+@router.post("/sample", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
+def ingest_sample_document(
+    workspace_id: str = Form(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+    db: Session = Depends(get_db)
+):
+    """
+    Ingests the bundled public-domain sample paper into the workspace.
+    Enqueues real text extraction, sentence chunking, and ChromaDB vector indexing.
+    """
+    doc = DocumentService.ingest_sample_document(
+        workspace_id=workspace_id,
+        db=db,
+        background_tasks=background_tasks
+    )
+    return DocumentResponse.model_validate(doc)
+
+
+
 @router.get("", response_model=DocumentListResponse)
 def list_documents(
     workspace_id: str,

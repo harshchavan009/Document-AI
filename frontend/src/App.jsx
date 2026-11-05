@@ -4,7 +4,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { WorkspaceLayout } from "./components/layout/WorkspaceLayout";
 import { LandingPage } from "./pages/LandingPage";
-import { OverviewPage } from "./pages/OverviewPage";
+import { HomePage } from "./pages/HomePage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { ResearchPage } from "./pages/ResearchPage";
 import { DocsPage } from "./pages/DocsPage";
@@ -47,7 +47,7 @@ export default function App() {
 
             {/* Application Workspace Routes */}
             <Route path="/workspace" element={<WorkspaceLayout />}>
-              <Route index element={<OverviewPage />} />
+              <Route index element={<HomePage />} />
               <Route path="documents" element={<DocumentsPage />} />
               <Route path="research" element={<ResearchPage />} />
             </Route>

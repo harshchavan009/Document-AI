@@ -160,3 +160,56 @@ class DocumentService:
         background_tasks.add_task(JobService.process_document, doc.id)
         return doc
 
+    @staticmethod
+    def ingest_sample_document(workspace_id: str, db: Session, background_tasks: BackgroundTasks) -> Document:
+        """
+        Ingests the bundled public-domain sample paper into the workspace.
+        """
+        workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
+        if not workspace:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workspace not found"
+            )
+
+        asset_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "sample_document.txt")
+        if not os.path.exists(asset_path):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Bundled sample document asset not found"
+            )
+
+        with open(asset_path, "rb") as f:
+            file_bytes = f.read()
+
+        filename = "Attention_Is_All_You_Need.txt"
+        file_hash = compute_sha256(file_bytes)
+        os.makedirs(settings.UPLOADS_DIR, exist_ok=True)
+        file_id, storage_path = generate_storage_path(settings.UPLOADS_DIR, ".txt")
+        with open(storage_path, "wb") as f:
+            f.write(file_bytes)
+
+        existing = db.query(Document).filter(
+            Document.workspace_id == workspace_id,
+            Document.file_hash == file_hash
+        ).first()
+        if existing:
+            return existing
+
+        doc = Document(
+            workspace_id=workspace_id,
+            filename=filename,
+            file_type="text/plain",
+            file_size=len(file_bytes),
+            file_hash=file_hash,
+            storage_path=storage_path,
+            status="Uploaded"
+        )
+        db.add(doc)
+        db.commit()
+        db.refresh(doc)
+
+        background_tasks.add_task(JobService.process_document, doc.id)
+        return doc
+
+

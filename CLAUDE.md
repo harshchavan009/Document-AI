@@ -173,6 +173,8 @@ Document-AI/
 - **Phase 5 (QA & Security Auditing):** Complete. Dependency audits documented, secret scan passed, retrieval calibration evaluated, security review published.
 - **Phase 6 (Documentation & Deployment):** Complete. Production `README.md`, genuine headless Chrome screenshots (`docs/screenshots/`), deployment guide, and internship evaluation summary finalized.
 - **Redesign Phase R1 (Foundations):** Complete. Implemented Forest Pine and Warm Ember tokens, self-hosted Source Serif 4 and Inter typography, original SVG BrandMark and Wordmark, base components (Button, IconButton, StatusDot, CitationMarker, EvidenceExcerpt, SourceCard, EmptyState, CommandPalette), and `/design-system` showcase route. Verified with 23 backend tests and full frontend build.
+- **Redesign Phase R2 (App Shell, Home, Library):** Complete. Implemented search-first Workspace Home (Dropbox Dash / Perplexity style) replacing 4-up stat cards, purposeful onboarding empty desk with live `/api/config` limits and sample paper ingestion, Notion-style property table for Document Library with sorting, filtering, and bulk actions, floating `UploadTray` with byte progress, and full-window drag-and-drop backdrop. Backend `POST /api/documents/sample` added and verified. All 24 backend tests passing.
+
 
 
 

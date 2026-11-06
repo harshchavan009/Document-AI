@@ -203,13 +203,13 @@ export function Sidebar({
             <button
               type="button"
               onClick={triggerCommandPalette}
-              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-muted hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-1.5">
                 <Command className="w-3.5 h-3.5 text-accent" />
                 <span>Command Menu</span>
               </div>
-              <kbd className="text-[10px] font-mono px-1 py-0.2 bg-surface-subtle border border-border rounded-[3px]">
+              <kbd className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-secondary border border-border rounded-[3px]">
                 ⌘K
               </kbd>
             </button>
@@ -219,8 +219,9 @@ export function Sidebar({
             <button
               type="button"
               onClick={triggerCommandPalette}
-              className="p-1.5 rounded-[4px] text-content-muted hover:text-content-primary hover:bg-surface-subtle"
-              title="Command Menu (⌘K)"
+              className="p-1.5 rounded-[4px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle"
+              title="Command Menu"
+              aria-label="Command Menu"
             >
               <Command className="w-4 h-4" />
             </button>

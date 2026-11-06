@@ -419,7 +419,7 @@ for index in extracted_indices:
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-[6px] border border-border bg-surface space-y-1.5 text-xs">
+              <div className="p-3.5 rounded-[6px] border border-border bg-surface space-y-2 text-xs">
                 <div className="flex items-center gap-2 font-mono">
                   <span className="px-1.5 py-0.5 rounded-[3px] bg-accent-subtle text-accent font-bold text-[10px]">
                     POST
@@ -429,6 +429,12 @@ for index in extracted_indices:
                 <p className="text-content-secondary">
                   Server-Sent Events endpoint streaming answer tokens and dispatching verified citation payloads.
                 </p>
+                <div className="rounded-[5px] border border-border bg-canvas p-3 font-mono text-[11px] text-content-secondary overflow-x-auto">
+                  <pre>{`curl -X POST http://localhost:8001/api/chat/query/stream \\
+  -H "Content-Type: application/json" \\
+  -H "X-Session-ID: your_session_token" \\
+  -d '{"workspace_id": "...", "question": "What is self-attention?"}'`}</pre>
+                </div>
               </div>
 
               <div className="p-3.5 rounded-[6px] border border-border bg-surface space-y-1.5 text-xs">

@@ -258,7 +258,12 @@ export function DocumentReader({
       )}
 
       {/* Document Content Viewport */}
-      <div className="flex-1 overflow-auto p-4 flex justify-center bg-canvas">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Document content viewport"
+        className="flex-1 overflow-auto p-4 flex justify-center bg-canvas focus:outline-none focus:ring-1 focus:ring-accent"
+      >
         {isPdf ? (
           <div className="relative shadow-md rounded border border-border bg-surface my-auto">
             {rendering && (

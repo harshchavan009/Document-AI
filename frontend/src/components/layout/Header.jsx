@@ -54,11 +54,11 @@ export function Header({ onToggleSidebar }) {
         <button
           type="button"
           onClick={triggerCommandPalette}
-          className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 text-xs text-content-muted bg-surface-subtle hover:bg-surface-hover hover:text-content-primary border border-border rounded-[5px] transition-colors cursor-pointer"
+          className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 text-xs text-content-secondary bg-surface-subtle hover:bg-surface-hover hover:text-content-primary border border-border rounded-[5px] transition-colors cursor-pointer"
         >
           <Search className="w-3.5 h-3.5" />
           <span>Quick search...</span>
-          <kbd className="text-[10px] font-mono px-1 py-0.2 bg-surface border border-border rounded-[3px]">
+          <kbd className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-secondary border border-border rounded-[3px]">
             ⌘K
           </kbd>
         </button>

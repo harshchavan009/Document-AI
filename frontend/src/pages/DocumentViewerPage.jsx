@@ -218,7 +218,12 @@ export function DocumentViewerPage() {
 
         {/* Metadata Inspector Drawer */}
         {showMetadata && (
-          <aside className="w-72 border-l border-border bg-surface p-4 flex flex-col gap-4 overflow-y-auto shrink-0 animate-in slide-in-from-right duration-150">
+          <aside
+            tabIndex={0}
+            role="region"
+            aria-label="Document Details and Metadata"
+            className="w-72 border-l border-border bg-surface p-4 flex flex-col gap-4 overflow-y-auto shrink-0 animate-in slide-in-from-right duration-150 focus:outline-none"
+          >
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <h3 className="text-xs font-semibold text-content-primary">Document Details</h3>
               <button

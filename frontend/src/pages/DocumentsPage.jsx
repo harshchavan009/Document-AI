@@ -412,6 +412,7 @@ export function DocumentsPage() {
               type="button"
               onClick={() => setSearch("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-content-muted hover:text-content-primary"
+              aria-label="Clear filter search"
             >
               <X className="w-3 h-3" />
             </button>
@@ -490,6 +491,11 @@ export function DocumentsPage() {
                       type="button"
                       onClick={toggleSelectAll}
                       className="text-content-muted hover:text-content-primary cursor-pointer"
+                      aria-label={
+                        selectedDocs.size === filteredDocuments.length
+                          ? "Deselect all documents"
+                          : "Select all documents"
+                      }
                     >
                       {selectedDocs.size === filteredDocuments.length ? (
                         <CheckSquare className="w-3.5 h-3.5 text-accent" />
@@ -600,6 +606,7 @@ export function DocumentsPage() {
                           type="button"
                           onClick={() => toggleSelect(doc.id)}
                           className="text-content-muted hover:text-content-primary cursor-pointer"
+                          aria-label={`Select document ${doc.filename}`}
                         >
                           {isSelected ? (
                             <CheckSquare className="w-3.5 h-3.5 text-accent" />
@@ -667,6 +674,7 @@ export function DocumentsPage() {
                               }}
                               className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary"
                               title="Preview in Document Viewer"
+                              aria-label={`Preview document ${doc.filename}`}
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
@@ -678,6 +686,7 @@ export function DocumentsPage() {
                               onClick={() => handleReprocess(doc.id)}
                               className="p-1 rounded-[4px] hover:bg-surface-subtle text-semantic-warning-text"
                               title="Retry Processing"
+                              aria-label={`Retry processing document ${doc.filename}`}
                             >
                               <RefreshCw className="w-3.5 h-3.5" />
                             </button>
@@ -688,6 +697,7 @@ export function DocumentsPage() {
                             onClick={() => handleDelete(doc.id)}
                             className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-semantic-error-text"
                             title="Delete Document"
+                            aria-label={`Delete document ${doc.filename}`}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -738,6 +748,7 @@ export function DocumentsPage() {
               onClick={() => setSelectedDocs(new Set())}
               className="p-1 rounded text-content-muted hover:text-content-primary ml-1"
               title="Clear selection"
+              aria-label="Clear selection"
             >
               <X className="w-3.5 h-3.5" />
             </button>

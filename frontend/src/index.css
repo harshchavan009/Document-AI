@@ -21,11 +21,11 @@
   --dm-bg-hover: #EDE9E3;
   --dm-bg-active: #E3DDD5;
 
-  /* Text and Content (Light Mode Ink) */
+  /* Text and Content (Light Mode Ink) - Calibrated for WCAG 2.1 AA Contrast */
   --dm-text-primary: #1A1A1E;
   --dm-text-secondary: #4A4B53;
-  --dm-text-muted: #747682;
-  --dm-text-disabled: #A3A6B2;
+  --dm-text-muted: #5F626E;
+  --dm-text-disabled: #8E929E;
   --dm-text-inverse: #FBF9F5;
 
   /* Borders and Hairlines (Light Mode) */
@@ -80,11 +80,11 @@
   --dm-bg-hover: #262B30;
   --dm-bg-active: #2E343B;
 
-  /* Text and Content (Dark Mode Ivory) */
+  /* Text and Content (Dark Mode Ivory) - Calibrated for WCAG 2.1 AA Contrast */
   --dm-text-primary: #E6E8EC;
-  --dm-text-secondary: #A3A7AF;
-  --dm-text-muted: #6E737D;
-  --dm-text-disabled: #4B505A;
+  --dm-text-secondary: #A8ACB5;
+  --dm-text-muted: #959BA7;
+  --dm-text-disabled: #656A75;
   --dm-text-inverse: #0C0D0E;
 
   /* Borders and Hairlines (Dark Mode) */
@@ -93,10 +93,10 @@
   --dm-border-strong: #32373F;
   --dm-border-focus: #40916C;
 
-  /* Primary Brand Accent: Muted Emerald */
-  --dm-accent: #40916C;
-  --dm-accent-hover: #52B788;
-  --dm-accent-subtle: #132A1F;
+  /* Primary Brand Accent: Muted Emerald - Calibrated for WCAG 2.1 AA Contrast */
+  --dm-accent: #52B788;
+  --dm-accent-hover: #74C69D;
+  --dm-accent-subtle: #11281E;
   --dm-accent-text: #74C69D;
   --dm-accent-contrast: #0C0D0E;
 

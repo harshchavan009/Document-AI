@@ -91,6 +91,13 @@ export function CommandPalette({ isOpen, onClose }) {
       action: () => navigate("/docs"),
     },
     {
+      id: "nav-settings",
+      group: "Navigation",
+      title: "Open Settings & Runtime Diagnostics",
+      icon: Settings,
+      action: () => navigate("/settings"),
+    },
+    {
       id: "theme-light",
       group: "Theme",
       title: "Switch to Light Theme (Default Paper)",
@@ -118,9 +125,9 @@ export function CommandPalette({ isOpen, onClose }) {
     id: `doc-${doc.id}`,
     group: "Documents",
     title: doc.filename,
-    subtitle: `${doc.chunk_count || 0} chunks, Page ${doc.page_count || 1}`,
+    subtitle: `${doc.chunk_count || 0} chunks, ${doc.page_count || 1} pages`,
     icon: FileText,
-    action: () => navigate(`/workspace/documents`),
+    action: () => navigate(`/documents/${doc.id}`),
   }));
 
   const allCommands = [...docCommands, ...navigationCommands];

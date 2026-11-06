@@ -1,53 +1,93 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, FileCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, FileCheck, Sun, Moon } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { BrandWordmark } from "../components/ui/BrandMark";
+import { useTheme } from "../context/ThemeContext";
 
 export function TermsPage() {
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+
   return (
-    <div className="min-h-screen bg-canvas text-content-primary p-4 sm:p-8 max-w-3xl mx-auto space-y-8 selection:bg-indigo-500 selection:text-white">
-      <div className="flex items-center gap-3 pb-6 border-b border-border">
-        <Link to="/">
-          <Button size="sm" variant="subtle" icon={ArrowLeft}>
-            Back to Home
-          </Button>
-        </Link>
-        <div className="h-4 w-px bg-border" />
-        <h1 className="text-lg font-bold text-content-primary flex items-center gap-2">
-          <FileCheck className="w-5 h-5 text-accent" />
-          <span>Terms and Conditions</span>
-        </h1>
-      </div>
+    <div className="min-h-screen bg-canvas text-content-primary flex flex-col">
+      {/* Header */}
+      <header className="h-14 border-b border-border bg-surface px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center mr-2">
+            <BrandWordmark size={18} />
+          </Link>
+          <div className="h-4 w-px bg-border hidden sm:block" />
+          <span className="text-xs text-content-secondary hidden sm:inline">
+            Terms of Service
+          </span>
+        </div>
 
-      <div className="space-y-6 text-xs sm:text-sm text-content-secondary leading-relaxed">
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold text-content-primary">
-            1. Acceptable Use
-          </h2>
-          <p>
-            DocuMind AI is provided for research, study, and document analysis. Users must not upload malicious files, executables disguised as text, or content violating copyright or applicable privacy regulations.
-          </p>
-        </section>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="p-1.5 rounded hover:bg-surface-subtle text-content-secondary hover:text-content-primary transition-colors cursor-pointer"
+            title="Toggle theme"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="w-4 h-4 text-accent" /> : <Moon className="w-4 h-4" />}
+          </button>
+          <Link to="/workspace">
+            <Button size="sm">Open Workspace</Button>
+          </Link>
+        </div>
+      </header>
 
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold text-content-primary">
-            2. AI Responses and Source Verification
-          </h2>
-          <p>
-            While DocuMind AI enforces source-grounded retrieval and server-side citation validation, AI generated answers are intended to assist human analysis. Users should always inspect the linked source citations to verify primary text context for mission-critical decisions.
+      {/* Main Reading Column */}
+      <main className="max-w-3xl mx-auto p-6 sm:p-10 space-y-8 flex-1">
+        <div className="border-b border-border pb-6 space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-accent-subtle/60 border border-accent/20 text-accent font-mono text-[11px] font-semibold">
+            <FileCheck className="w-3.5 h-3.5" />
+            <span>Usage Agreement</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary tracking-tight">
+            Terms and Conditions
+          </h1>
+          <p className="text-xs text-content-muted font-mono">
+            Effective Date: November 2026 • Version 1.0
           </p>
-        </section>
+        </div>
 
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold text-content-primary">
-            3. Availability and Limits
-          </h2>
-          <p>
-            Document file sizes, chunking limits, and rate limitations are enforced by system configuration. The service is provided as-is without warranties of uninterrupted availability.
-          </p>
-        </section>
-      </div>
+        <div className="space-y-6 text-xs sm:text-sm text-content-secondary leading-relaxed">
+          <section className="space-y-2">
+            <h2 className="text-base font-serif font-semibold text-content-primary">
+              1. Permitted Research Use
+            </h2>
+            <p>
+              DocuMind AI provides grounded document intelligence for research, literature review, and study. Users agree to upload only legitimate documentation and research files. Uploading malicious binaries, executables disguised as text, or copyrighted content without authorization is strictly prohibited.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-serif font-semibold text-content-primary">
+              2. Source Citations and Ground Truth Verification
+            </h2>
+            <p>
+              DocuMind AI implements deterministic chunk extraction and server-side citation validation to strip hallucinated citations. However, generative synthesis should always be reviewed against the linked primary source passages before taking critical actions.
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-serif font-semibold text-content-primary">
+              3. Service Limitations and Enforced Limits
+            </h2>
+            <p>
+              File sizes, token windows, and rate limits are enforced dynamically by backend configuration. The software is provided as-is without representations of uninterrupted uptime or fitness for emergency operations.
+            </p>
+          </section>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-surface py-6 px-4 sm:px-8 text-center text-xs text-content-muted">
+        DocuMind AI • Verifiable Document Intelligence Platform
+      </footer>
     </div>
   );
 }
-

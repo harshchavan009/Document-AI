@@ -9,6 +9,7 @@ import {
   X,
   Menu,
   Command,
+  Settings,
 } from "lucide-react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { Button } from "../ui/Button";
@@ -33,6 +34,7 @@ export function Sidebar({
     { label: "Home", path: "/workspace", icon: Layers },
     { label: "Document Library", path: "/workspace/documents", icon: FileText },
     { label: "Research Canvas", path: "/workspace/research", icon: Sparkles },
+    { label: "Settings & Config", path: "/settings", icon: Settings },
   ];
 
   const handleCreate = async (e) => {

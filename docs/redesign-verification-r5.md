@@ -147,3 +147,4 @@ Production build executed via `npm --prefix frontend run build`:
   - `index-BwYSPw9e.js`: 169.71 kB (gzip: 37.79 kB).
   - `index-Ym14W5_E.css`: 72.55 kB (gzip: 22.86 kB).
 - **Font Self-Hosting:** Inter, Source Serif 4, and JetBrains Mono self-hosted via `@fontsource` with zero external Google Fonts network dependencies.
+

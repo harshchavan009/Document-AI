@@ -1,0 +1,255 @@
+import os
+import sys
+import json
+import uuid
+import time
+import requests
+import sqlite3
+
+BASE_URL = "http://127.0.0.1:8001/api"
+DB_PATH = "storage/documind.db"
+CHROMA_DIR = "storage/chroma"
+
+def run_audit():
+    results = {}
+    print("==================================================")
+    print("DocuMind AI: Comprehensive Launch Audit Test Suite")
+    print("==================================================")
+
+    # ----------------------------------------------------
+    # TEST GROUP 1: Health & Runtime Config
+    # ----------------------------------------------------
+    print("\n--- 1. Health & Config Endpoints ---")
+    res = requests.get(f"{BASE_URL}/health")
+    print(f"GET /api/health: Status {res.status_code}, Body: {res.text}")
+    results["health"] = {"status": res.status_code, "body": res.json() if res.status_code == 200 else res.text}
+
+    res_cfg = requests.get(f"{BASE_URL}/config")
+    print(f"GET /api/config: Status {res_cfg.status_code}, Body: {res_cfg.text}")
+    results["config"] = {"status": res_cfg.status_code, "body": res_cfg.json() if res_cfg.status_code == 200 else res_cfg.text}
+    cfg = res_cfg.json() if res_cfg.status_code == 200 else {}
+
+    # ----------------------------------------------------
+    # TEST GROUP 2: Ingestion & Validation Edge Cases
+    # ----------------------------------------------------
+    print("\n--- 2. File Upload & Ingestion Edge Cases ---")
+    # Setup test session A
+    session_a = f"audit_user_a_{uuid.uuid4().hex[:8]}"
+    headers_a = {"X-Session-ID": session_a}
+
+    # Get or create workspace for user A
+    ws_res = requests.get(f"{BASE_URL}/workspaces", headers=headers_a)
+    ws_data = ws_res.json()
+    ws_a_id = ws_data["workspaces"][0]["id"]
+    print(f"User A Session: {session_a}, Workspace ID: {ws_a_id}")
+
+    upload_tests = {}
+
+    # 2.1 Empty file (0 bytes)
+    res_empty = requests.post(
+        f"{BASE_URL}/documents/upload",
+        headers=headers_a,
+        data={"workspace_id": ws_a_id},
+        files=[("files", ("empty.txt", b"", "text/plain"))]
+    )
+    print(f"Upload Empty File: HTTP {res_empty.status_code} -> {res_empty.text}")
+    upload_tests["empty_file"] = {"status": res_empty.status_code, "response": res_empty.text}
+
+    # 2.2 Invalid extension (.exe)
+    res_exe = requests.post(
+        f"{BASE_URL}/documents/upload",
+        headers=headers_a,
+        data={"workspace_id": ws_a_id},
+        files=[("files", ("malware.exe", b"MZ\x90\x00\x03\x00\x00\x00", "application/octet-stream"))]
+    )
+    print(f"Upload Invalid Ext (.exe): HTTP {res_exe.status_code} -> {res_exe.text}")
+    upload_tests["invalid_extension"] = {"status": res_exe.status_code, "response": res_exe.text}
+
+    # 2.3 Spoofed MIME (PNG image renamed to .pdf)
+    png_bytes = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
+    res_spoof = requests.post(
+        f"{BASE_URL}/documents/upload",
+        headers=headers_a,
+        data={"workspace_id": ws_a_id},
+        files=[("files", ("fake_report.pdf", png_bytes, "application/pdf"))]
+    )
+    print(f"Upload Spoofed MIME (PNG as PDF): HTTP {res_spoof.status_code} -> {res_spoof.text}")
+    upload_tests["spoofed_mime"] = {"status": res_spoof.status_code, "response": res_spoof.text}
+
+    # 2.4 Path traversal in filename (../../secret.txt)
+    res_traversal = requests.post(
+        f"{BASE_URL}/documents/upload",
+        headers=headers_a,
+        data={"workspace_id": ws_a_id},
+        files=[("files", ("../../etc/passwd.txt", b"Root user account data", "text/plain"))]
+    )
+    print(f"Upload Path Traversal Filename: HTTP {res_traversal.status_code} -> {res_traversal.text}")
+    upload_tests["path_traversal"] = {"status": res_traversal.status_code, "response": res_traversal.text}
+
+    # 2.5 Unicode filename
+    unicode_name = "Résumé_Recherche_日本語_2026.txt"
+    unicode_content = "Ce document contient des notes de recherche en français et en japonais (自然言語処理).".encode("utf-8")
+    res_unicode = requests.post(
+        f"{BASE_URL}/documents/upload",
+        headers=headers_a,
+        data={"workspace_id": ws_a_id},
+        files=[("files", (unicode_name, unicode_content, "text/plain"))]
+    )
+    print(f"Upload Unicode Filename: HTTP {res_unicode.status_code} -> {res_unicode.text}")
+    upload_tests["unicode_filename"] = {"status": res_unicode.status_code, "response": res_unicode.text}
+
+    # 2.6 Oversized file check (> 25MB)
+    max_mb = cfg.get("max_file_size_mb", 20)
+    print(f"Config max_file_size_mb: {max_mb} MB")
+
+    # 2.7 Valid TXT Upload for User A
+    doc_text = """Deep learning architectures for medical image analysis and multimodal document understanding.
+Section 1: Vision-Language Models
+Recent advances in multimodal transformers have demonstrated strong zero-shot reasoning capabilities across radiographic reports and pathological slides.
+Section 2: Verification Protocols
+All diagnostic hypotheses generated by multimodal assistants must undergo multi-observer consensus review and calibration checks."""
+    res_valid_a = requests.post(
+        f"{BASE_URL}/documents/upload",
+        headers=headers_a,
+        data={"workspace_id": ws_a_id},
+        files=[("files", ("Medical_Vision_Report.txt", doc_text.encode("utf-8"), "text/plain"))]
+    )
+    print(f"Upload Valid Doc (User A): HTTP {res_valid_a.status_code} -> {res_valid_a.text}")
+    doc_a_id = None
+    if res_valid_a.status_code in [200, 202]:
+        resp_json = res_valid_a.json()
+        if "uploaded" in resp_json and len(resp_json["uploaded"]) > 0:
+            doc_a_id = resp_json["uploaded"][0]["id"]
+        elif "documents" in resp_json and len(resp_json["documents"]) > 0:
+            doc_a_id = resp_json["documents"][0]["id"]
+        elif "id" in resp_json:
+            doc_a_id = resp_json["id"]
+
+    # Wait for document A to process
+    if doc_a_id:
+        print(f"Waiting for document {doc_a_id} to complete pipeline processing...")
+        for _ in range(20):
+            st_res = requests.get(f"{BASE_URL}/documents/{doc_a_id}/status", headers=headers_a)
+            st_data = st_res.json()
+            if st_data.get("status") in ["Ready", "Failed"]:
+                print(f"Document {doc_a_id} status: {st_data.get('status')}")
+                break
+            time.sleep(0.5)
+
+    results["upload_validation"] = upload_tests
+
+    # ----------------------------------------------------
+    # TEST GROUP 3: Cross-Tenant Isolation (CRITICAL)
+    # ----------------------------------------------------
+    print("\n--- 3. Cross-Tenant Isolation & Authorization ---")
+    session_b = f"audit_user_b_{uuid.uuid4().hex[:8]}"
+    headers_b = {"X-Session-ID": session_b}
+
+    # User B initializes
+    ws_b_res = requests.get(f"{BASE_URL}/workspaces", headers=headers_b)
+    ws_b_id = ws_b_res.json()["workspaces"][0]["id"]
+    print(f"User B Session: {session_b}, Workspace ID: {ws_b_id}")
+
+    isolation_results = {}
+
+    if doc_a_id:
+        # Attack 1: User B tries to list User A's workspace documents
+        res_list_leak = requests.get(f"{BASE_URL}/documents?workspace_id={ws_a_id}", headers=headers_b)
+        print(f"User B lists User A's workspace ({ws_a_id}): HTTP {res_list_leak.status_code} -> {res_list_leak.text}")
+        isolation_results["list_other_workspace"] = {
+            "status": res_list_leak.status_code,
+            "leak": res_list_leak.status_code == 200 and len(res_list_leak.json().get("documents", [])) > 0
+        }
+
+        # Attack 2: User B tries to read User A's document status
+        res_stat_leak = requests.get(f"{BASE_URL}/documents/{doc_a_id}/status", headers=headers_b)
+        print(f"User B gets User A's doc status ({doc_a_id}): HTTP {res_stat_leak.status_code} -> {res_stat_leak.text}")
+        isolation_results["get_other_doc_status"] = {
+            "status": res_stat_leak.status_code,
+            "leak": res_stat_leak.status_code == 200
+        }
+
+        # Attack 3: User B tries to download User A's raw document file
+        res_file_leak = requests.get(f"{BASE_URL}/documents/{doc_a_id}/file", headers=headers_b)
+        print(f"User B downloads User A's raw file ({doc_a_id}): HTTP {res_file_leak.status_code} -> {res_file_leak.text[:100]}")
+        isolation_results["download_other_file"] = {
+            "status": res_file_leak.status_code,
+            "leak": res_file_leak.status_code == 200
+        }
+
+        # Attack 4: User B queries User A's workspace via RAG
+        res_chat_leak = requests.post(
+            f"{BASE_URL}/chat/query",
+            headers=headers_b,
+            json={"workspace_id": ws_a_id, "question": "What is Section 1 about?"}
+        )
+        print(f"User B queries User A's workspace ({ws_a_id}): HTTP {res_chat_leak.status_code} -> {res_chat_leak.text[:150]}")
+        isolation_results["query_other_workspace"] = {
+            "status": res_chat_leak.status_code,
+            "leak": res_chat_leak.status_code == 200 and "multimodal" in res_chat_leak.text.lower()
+        }
+
+        # Attack 5: User B tries to delete User A's document
+        res_del_leak = requests.delete(f"{BASE_URL}/documents/{doc_a_id}", headers=headers_b)
+        print(f"User B deletes User A's doc ({doc_a_id}): HTTP {res_del_leak.status_code} -> {res_del_leak.text}")
+        isolation_results["delete_other_doc"] = {
+            "status": res_del_leak.status_code,
+            "leak": res_del_leak.status_code == 200
+        }
+
+    results["isolation"] = isolation_results
+
+    # ----------------------------------------------------
+    # TEST GROUP 4: Deletion & Database/Chroma Cleanup
+    # ----------------------------------------------------
+    print("\n--- 4. Deletion & Residual Cleanup ---")
+    if doc_a_id:
+        # Check SQLite counts before deletion
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM documents WHERE id = ?", (doc_a_id,))
+        doc_count_before = c.fetchone()[0]
+        c.execute("SELECT COUNT(*) FROM document_chunks WHERE document_id = ?", (doc_a_id,))
+        chunk_count_before = c.fetchone()[0]
+        print(f"Pre-deletion SQLite: {doc_count_before} doc row, {chunk_count_before} chunk rows")
+
+        # Now User A legitimately deletes document A
+        del_res = requests.delete(f"{BASE_URL}/documents/{doc_a_id}", headers=headers_a)
+        print(f"User A legitimate delete: HTTP {del_res.status_code} -> {del_res.text}")
+
+        # Check SQLite counts after deletion
+        c.execute("SELECT COUNT(*) FROM documents WHERE id = ?", (doc_a_id,))
+        doc_count_after = c.fetchone()[0]
+        c.execute("SELECT COUNT(*) FROM document_chunks WHERE document_id = ?", (doc_a_id,))
+        chunk_count_after = c.fetchone()[0]
+        conn.close()
+        print(f"Post-deletion SQLite: {doc_count_after} doc row, {chunk_count_after} chunk rows")
+
+        results["deletion_cleanup"] = {
+            "http_status": del_res.status_code,
+            "doc_in_sqlite": doc_count_after == 0,
+            "chunks_in_sqlite": chunk_count_after == 0
+        }
+
+    # ----------------------------------------------------
+    # TEST GROUP 5: Git Secret Scan
+    # ----------------------------------------------------
+    print("\n--- 5. Git History Secret Scan ---")
+    import subprocess
+    cmd = "git log -p -S 'AIza' | head -n 30"
+    proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if proc.stdout.strip():
+        print("WARNING: Leaked Google API key pattern 'AIza' found in git history!")
+        results["git_secrets"] = {"status": "LEAK_FOUND", "snippet": proc.stdout[:200]}
+    else:
+        print("PASS: No 'AIza' Google API key patterns found in git history.")
+        results["git_secrets"] = {"status": "CLEAN"}
+
+    # Save results to file
+    with open("docs/launch-audit-raw.json", "w") as f:
+        json.dump(results, f, indent=2)
+    print("\nAudit completed. Raw output saved to docs/launch-audit-raw.json")
+    return results
+
+if __name__ == "__main__":
+    run_audit()

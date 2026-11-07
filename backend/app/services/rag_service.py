@@ -1,6 +1,6 @@
 import re
 import logging
-from typing import List, Dict, Any, Tuple, Generator
+from typing import List, Dict, Any, Tuple, Generator, Optional
 from backend.app.config import settings
 from backend.app.services.retrieval_service import RetrievalService
 from backend.app.prompts.rag_prompts import RAG_SYSTEM_PROMPT, format_context_block

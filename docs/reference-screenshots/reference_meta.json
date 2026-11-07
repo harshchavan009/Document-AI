@@ -1,0 +1,64 @@
+{
+  "linear": {
+    "url": "https://linear.app",
+    "title": "Linear – The system for product development",
+    "headlines": [
+      "The product development system for teams and agentsThe product developmentsystem for teams and agentsThe product development system for teams and agents",
+      "A new species of product tool. Purpose-built for modern teams with AI workflows at its core, Linear sets a new standard for planning and building products.",
+      "Intakeand integrations",
+      "Planningand monitoring",
+      "AI andautomations"
+    ]
+  },
+  "stripe": {
+    "url": "https://stripe.com",
+    "title": "Stripe | Financial Infrastructure to Grow Your Revenue",
+    "headlines": [
+      "Financial infrastructure to grow your revenue. Accept payments, offer financial services and implement custom revenue models – from your first transaction to your billionth.",
+      "Financial infrastructure to grow your revenue. Accept payments, offer financial services and implement custom revenue models – from your first transaction to your billionth.",
+      "Flexible solutions for every business model.",
+      "The backbone of global commerce",
+      "Powering businesses of all sizes."
+    ]
+  },
+  "resend": {
+    "url": "https://resend.com",
+    "title": "Resend · Email for developers",
+    "headlines": [
+      "Email fordevelopers",
+      "Integrate this weekend",
+      "First-class developer experience",
+      "Test mode",
+      "Modular webhooks"
+    ]
+  },
+  "vercel": {
+    "url": "https://vercel.com",
+    "title": "Agentic Infrastructure - Vercel",
+    "headlines": [
+      "Agentic Infrastructure",
+      "Build agents on infrastructure that thinks like them",
+      "Ship apps that scale from zero to millions instantly",
+      "Host platforms that serve every customer",
+      "Recently shipped"
+    ]
+  },
+  "raycast": {
+    "url": "https://raycast.com",
+    "title": "Raycast - Your shortcut to everything",
+    "headlines": [
+      "Your shortcut to everything.",
+      "Take shortcuts, not detours.",
+      "It’s not about saving time.",
+      "There’s an extension for that.",
+      "Meet your new virtual assistant"
+    ]
+  },
+  "perplexity": {
+    "url": "https://perplexity.ai",
+    "title": "Perplexity",
+    "headlines": [
+      "What do you want to know?What should we work on?What do you want to know?"
+    ]
+  }
+}

@@ -127,7 +127,7 @@ export function DocumentsPage() {
       window.removeEventListener("dragleave", handleDragLeave);
       window.removeEventListener("drop", handleWindowDrop);
     };
-  }, [activeWorkspace]);
+  }, [activeWorkspace, isWindowDragging]);
 
   // Upload handler with live byte tracking
   const handleUploadFiles = async (files) => {
@@ -645,9 +645,23 @@ export function DocumentsPage() {
                         </div>
                       </td>
 
-                      {/* Status */}
+                      {/* Status + Inline Retry if failed */}
                       <td className="py-2.5 px-3">
-                        <StatusDot status={doc.status} errorMessage={doc.error_message} />
+                        <div className="flex items-center gap-2">
+                          <StatusDot status={doc.status} errorMessage={doc.error_message} />
+                          {doc.status.toLowerCase() === "failed" && (
+                            <button
+                              type="button"
+                              onClick={() => handleReprocess(doc.id)}
+                              className="text-[11px] text-accent hover:underline font-medium inline-flex items-center gap-1 cursor-pointer"
+                              title="Retry processing this document"
+                              aria-label={`Retry processing document ${doc.filename}`}
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              <span>Retry</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       {/* Pages */}
@@ -666,7 +680,7 @@ export function DocumentsPage() {
                       </td>
 
                       {/* Added Date */}
-                      <td className="py-2.5 px-3 text-content-muted text-[11px]">
+                      <td className="py-2.5 px-3 text-content-muted text-[11px] tabular-nums">
                         {formatDate(doc.created_at)}
                       </td>
 
@@ -680,7 +694,7 @@ export function DocumentsPage() {
                                 setPreviewDocId(doc.id);
                                 setPreviewPage(1);
                               }}
-                              className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary"
+                              className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary cursor-pointer"
                               title="Preview in Document Viewer"
                               aria-label={`Preview document ${doc.filename}`}
                             >
@@ -692,7 +706,7 @@ export function DocumentsPage() {
                             <button
                               type="button"
                               onClick={() => handleReprocess(doc.id)}
-                              className="p-1 rounded-[4px] hover:bg-surface-subtle text-semantic-warning-text"
+                              className="p-1 rounded-[4px] hover:bg-surface-subtle text-semantic-warning-text cursor-pointer"
                               title="Retry Processing"
                               aria-label={`Retry processing document ${doc.filename}`}
                             >
@@ -703,7 +717,7 @@ export function DocumentsPage() {
                           <button
                             type="button"
                             onClick={() => handleDelete(doc.id)}
-                            className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-semantic-error-text"
+                            className="p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-semantic-error-text cursor-pointer"
                             title="Delete Document"
                             aria-label={`Delete document ${doc.filename}`}
                           >
@@ -723,7 +737,7 @@ export function DocumentsPage() {
       {/* Floating Bulk Action Bar */}
       {selectedDocs.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-surface border border-border shadow-floating px-4 py-2.5 rounded-[8px] flex items-center gap-4 text-xs animate-in slide-in-from-bottom-2 duration-150">
-          <span className="font-semibold text-content-primary">
+          <span className="font-semibold text-content-primary tabular-nums">
             {selectedDocs.size} document{selectedDocs.size === 1 ? "" : "s"} selected
           </span>
 
@@ -754,7 +768,7 @@ export function DocumentsPage() {
             <button
               type="button"
               onClick={() => setSelectedDocs(new Set())}
-              className="p-1 rounded text-content-muted hover:text-content-primary ml-1"
+              className="p-1 rounded text-content-muted hover:text-content-primary ml-1 cursor-pointer"
               title="Clear selection"
               aria-label="Clear selection"
             >

@@ -11,16 +11,27 @@ export function Header({ onToggleSidebar }) {
   const location = useLocation();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
+  const isMac = typeof navigator !== "undefined" && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent);
+
   const getBreadcrumbs = () => {
     const path = location.pathname;
     if (path === "/workspace/documents") return "Document Library";
-    if (path === "/workspace/research") return "Research Canvas";
+    if (path === "/workspace/research") return "Research Desk";
+    if (path === "/workspace/settings") return "Settings";
+    if (path === "/system") return "System Diagnostics";
     if (path === "/docs") return "System Documentation";
     return "Workspace Home";
   };
 
   const triggerCommandPalette = () => {
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "k",
+        metaKey: isMac,
+        ctrlKey: !isMac,
+        bubbles: true,
+      })
+    );
   };
 
   return (
@@ -51,17 +62,19 @@ export function Header({ onToggleSidebar }) {
         </div>
       </div>
 
-      {/* Right Tools: Command Palette Trigger + Theme Toggle + Public Link */}
+      {/* Right Tools: Command Palette Trigger + Feedback + Theme Toggle + Public Link */}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={triggerCommandPalette}
           className="hidden sm:inline-flex items-center gap-2 px-2.5 py-1 text-xs text-content-secondary bg-surface-subtle hover:bg-surface-hover hover:text-content-primary border border-border rounded-[5px] transition-colors cursor-pointer"
+          title={`Quick search (${isMac ? "⌘K" : "Ctrl+K"})`}
+          aria-label="Search documents and commands"
         >
           <Search className="w-3.5 h-3.5" />
           <span>Quick search...</span>
           <kbd className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-secondary border border-border rounded-[3px]">
-            ⌘K
+            {isMac ? "⌘K" : "Ctrl+K"}
           </kbd>
         </button>
 
@@ -88,8 +101,8 @@ export function Header({ onToggleSidebar }) {
         <Link
           to="/"
           className="p-1.5 rounded-[5px] hover:bg-surface-subtle text-content-secondary hover:text-content-primary transition-colors inline-flex items-center"
-          title="Return to Product Home"
-          aria-label="Product Home"
+          title="Return to DocuMind AI homepage"
+          aria-label="DocuMind AI Homepage"
         >
           <ExternalLink className="w-4 h-4" />
         </Link>

@@ -9,16 +9,13 @@ import {
   Clock,
   MessageSquare,
   AlertCircle,
-  FileCheck,
   ChevronRight,
   BookOpen,
-  Filter,
 } from "lucide-react";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { api } from "../api/client";
 import { StatusDot } from "../components/ui/StatusDot";
 import { Button } from "../components/ui/Button";
-import { EmptyState } from "../components/ui/EmptyState";
 import { SkeletonLoader } from "../components/ui/SkeletonLoader";
 import { usePageMeta } from "../hooks/usePageMeta";
 
@@ -36,9 +33,10 @@ export function HomePage() {
   const [error, setError] = useState(null);
   const [ingestingSample, setIngestingSample] = useState(false);
 
-  // Drag and drop state for empty workspace
+  // Drag and drop state
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Fetch real data from backend
   const loadWorkspaceData = useCallback(async () => {
@@ -87,7 +85,7 @@ export function HomePage() {
     const trimmed = query.trim();
     if (!trimmed) return;
 
-    // If query looks like a question or has multiple words, route to Research Workspace with query
+    // If query looks like a question or has multiple words, route to Research Desk with query
     if (trimmed.includes(" ") || trimmed.endsWith("?")) {
       navigate(`/workspace/research?q=${encodeURIComponent(trimmed)}`);
     } else {
@@ -111,7 +109,7 @@ export function HomePage() {
     }
   };
 
-  // Handle File Upload from Drop Zone
+  // Handle File Upload from Drop Zone or File Picker
   const handleDrop = async (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -183,19 +181,19 @@ export function HomePage() {
     );
   }
 
-  // 1. EMPTY WORKSPACE STATE: Purposeful Onboarding Desk
+  // 1. EMPTY WORKSPACE STATE: Editorial Upload Desk
   if (documents.length === 0) {
     const maxSize = config?.max_file_size_mb || 25;
     const allowed = (config?.allowed_extensions || [".pdf", ".txt"]).join(", ");
 
     return (
       <div className="p-6 sm:p-12 max-w-3xl mx-auto space-y-8 animate-in fade-in duration-150">
-        <div className="text-center space-y-2">
+        <div className="space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-content-primary">
             {activeWorkspace?.name || "Workspace Home"}
           </h1>
-          <p className="text-xs sm:text-sm text-content-secondary max-w-md mx-auto leading-relaxed">
-            Upload multi-page research PDFs or technical text documents to begin building your grounded knowledge index.
+          <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+            Upload multi-page research PDFs or technical text documents to begin building your grounded knowledge index. Every answer will cite exact pages verified server-side against stored vectors.
           </p>
         </div>
 
@@ -206,7 +204,7 @@ export function HomePage() {
           </div>
         )}
 
-        {/* Large Onboarding Drop Zone */}
+        {/* Calm Editorial Upload Desk */}
         <div
           onDragOver={(e) => {
             e.preventDefault();
@@ -214,62 +212,71 @@ export function HomePage() {
           }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
-          className={`p-10 border-2 border-dashed rounded-[8px] text-center transition-all ${
+          className={`p-8 border rounded-[8px] transition-all bg-surface ${
             isDragging
-              ? "border-accent bg-accent-subtle/50"
-              : "border-border bg-surface hover:border-border-strong"
+              ? "border-accent ring-2 ring-accent/20 bg-accent-subtle/30"
+              : "border-border hover:border-border-strong shadow-xs"
           }`}
         >
-          <div className="w-12 h-12 rounded-[6px] bg-accent-subtle text-accent mx-auto flex items-center justify-center mb-4">
-            <Upload className="w-6 h-6" />
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div className="space-y-3">
+              <div className="w-10 h-10 rounded-[6px] bg-accent-subtle text-accent flex items-center justify-center">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-content-primary">
+                  Drag and drop research files
+                </h3>
+                <p className="text-xs text-content-secondary max-w-md">
+                  Upload PDF research papers, technical reports, or text notes. Documents are parsed, split into passage chunks, and stored with page coordinates.
+                </p>
+              </div>
+              <div className="text-[11px] font-mono text-content-muted">
+                Accepts {allowed} • Up to {maxSize} MB each
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 shrink-0 sm:pt-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept={config?.allowed_extensions?.join(",") || ".pdf,.txt"}
+                onChange={handleFileInput}
+                className="hidden"
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Upload}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Choose files
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={BookOpen}
+                loading={ingestingSample}
+                onClick={handleIngestSample}
+              >
+                Try sample paper
+              </Button>
+            </div>
           </div>
-
-          <h3 className="text-sm font-semibold text-content-primary mb-1">
-            Drag and drop your research files here
-          </h3>
-          <p className="text-xs text-content-muted mb-4">
-            Supported types: {allowed} (up to {maxSize} MB each)
-          </p>
-
-          <label className="inline-block">
-            <input
-              type="file"
-              multiple
-              accept={config?.allowed_extensions?.join(",") || ".pdf,.txt"}
-              onChange={handleFileInput}
-              className="hidden"
-            />
-            <span className="inline-flex items-center justify-center font-medium text-xs h-8 px-4 rounded-[5px] bg-accent hover:bg-accent-hover text-accent-contrast shadow-xs transition-colors cursor-pointer">
-              Choose files from computer
-            </span>
-          </label>
         </div>
 
-        {/* Sample Paper Ingestion Card */}
-        <div className="p-4 rounded-[6px] border border-border bg-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Sample Paper Attribution Card */}
+        <div className="p-4 rounded-[6px] border border-border bg-surface-subtle/50 text-xs text-content-secondary flex items-start gap-3">
+          <BookOpen className="w-4 h-4 text-accent shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-content-primary">
-                Try instantly with a sample paper
-              </span>
-              <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-content-muted border border-border">
-                arXiv Preprint
-              </span>
-            </div>
-            <p className="text-xs text-content-secondary">
-              Attention Is All You Need (Vaswani et al., 2017). Educational demonstration under fair use.
+            <span className="font-semibold text-content-primary block">
+              Sample Document: Attention Is All You Need
+            </span>
+            <p className="text-[11px] text-content-muted leading-relaxed">
+              arXiv:1706.03762 (Vaswani et al., 2017). Educational demonstration under fair use. Contains the foundational Transformer architecture paper across 11 pages.
             </p>
           </div>
-
-          <Button
-            size="sm"
-            variant="secondary"
-            loading={ingestingSample}
-            icon={BookOpen}
-            onClick={handleIngestSample}
-          >
-            Load Sample Paper
-          </Button>
         </div>
       </div>
     );
@@ -298,7 +305,7 @@ export function HomePage() {
           </Link>
           <Link to="/workspace/research">
             <Button size="xs" variant="primary" icon={Sparkles}>
-              Open Research
+              Open Research Desk
             </Button>
           </Link>
         </div>
@@ -325,7 +332,7 @@ export function HomePage() {
         </div>
       )}
 
-      {/* Primary Search-First Input (Dropbox Dash / Perplexity style) */}
+      {/* Primary Search-First Input */}
       <div className="space-y-2">
         <form
           onSubmit={handleSearchSubmit}
@@ -343,7 +350,7 @@ export function HomePage() {
             type="submit"
             className="mr-2 p-1.5 rounded-[5px] bg-accent hover:bg-accent-hover text-accent-contrast shadow-xs transition-colors cursor-pointer"
             title="Submit question or search"
-            aria-label="Submit"
+            aria-label="Submit query"
           >
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -408,6 +415,7 @@ export function HomePage() {
                     to={`/workspace/research?scope=${doc.id}`}
                     className="p-1 rounded text-content-muted hover:text-accent hover:bg-surface-subtle"
                     title="Ask about this document"
+                    aria-label={`Ask about ${doc.filename}`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                   </Link>
@@ -456,7 +464,7 @@ export function HomePage() {
                     </span>
                     <ChevronRight className="w-3.5 h-3.5 text-content-muted shrink-0" />
                   </div>
-                  <div className="text-[11px] text-content-muted flex items-center gap-1">
+                  <div className="text-[11px] text-content-muted flex items-center gap-1 tabular-nums">
                     <Clock className="w-3 h-3" />
                     <span>{formatDate(session.updated_at)}</span>
                   </div>
@@ -469,4 +477,3 @@ export function HomePage() {
     </div>
   );
 }
-

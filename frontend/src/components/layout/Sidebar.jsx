@@ -7,9 +7,9 @@ import {
   ChevronDown,
   Plus,
   X,
-  Menu,
-  Command,
   Settings,
+  Activity,
+  BookOpen,
 } from "lucide-react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { Button } from "../ui/Button";
@@ -30,11 +30,15 @@ export function Sidebar({
   const [newWsName, setNewWsName] = useState("");
   const [creating, setCreating] = useState(false);
 
+  const isMac =
+    typeof navigator !== "undefined" &&
+    /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent);
+
   const navItems = [
     { label: "Home", path: "/workspace", icon: Layers },
     { label: "Document Library", path: "/workspace/documents", icon: FileText },
-    { label: "Research Canvas", path: "/workspace/research", icon: Sparkles },
-    { label: "Settings & Config", path: "/settings", icon: Settings },
+    { label: "Research Desk", path: "/workspace/research", icon: Sparkles },
+    { label: "Settings", path: "/workspace/settings", icon: Settings },
   ];
 
   const handleCreate = async (e) => {
@@ -51,10 +55,6 @@ export function Sidebar({
     } finally {
       setCreating(false);
     }
-  };
-
-  const triggerCommandPalette = () => {
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
   };
 
   const handleNavClick = () => {
@@ -93,6 +93,7 @@ export function Sidebar({
                 onClick={() => setCollapsed(!collapsed)}
                 className="hidden md:inline-flex p-1 rounded-[4px] hover:bg-surface-subtle text-content-muted hover:text-content-primary transition-colors cursor-pointer"
                 title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
                 <BrandMark size={14} className="opacity-40" />
               </button>
@@ -118,6 +119,7 @@ export function Sidebar({
               type="button"
               onClick={() => setShowWsMenu(!showWsMenu)}
               className="w-full flex items-center justify-between p-1.5 rounded-[5px] hover:bg-surface-subtle border border-border/70 text-left transition-colors cursor-pointer"
+              title="Switch or create workspace"
             >
               <div className="flex items-center gap-2 min-w-0">
                 <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
@@ -131,7 +133,7 @@ export function Sidebar({
             {showWsMenu && (
               <div className="absolute top-full left-2.5 right-2.5 mt-1 z-40 bg-surface border border-border rounded-[6px] shadow-lg p-1 space-y-0.5">
                 <div className="text-[10px] uppercase font-semibold text-content-muted px-2 py-1 tracking-wider">
-                  Workspaces
+                  Workspaces ({workspaces.length})
                 </div>
                 {workspaces.map((ws) => (
                   <button
@@ -183,13 +185,16 @@ export function Sidebar({
                 key={item.path}
                 to={item.path}
                 onClick={handleNavClick}
-                className={`flex items-center gap-2.5 py-1.5 rounded-[5px] text-xs transition-colors ${
+                className={`relative flex items-center gap-2.5 py-1.5 rounded-[5px] text-xs transition-colors ${
                   isActive
-                    ? "bg-accent-subtle/80 text-content-primary font-semibold border-l-2 border-accent pl-2.5 pr-2"
+                    ? "bg-accent-subtle/80 text-content-primary font-semibold pl-3 pr-2"
                     : "text-content-secondary hover:text-content-primary hover:bg-surface-subtle pl-3 pr-2"
                 } ${collapsed ? "justify-center !px-0" : ""}`}
                 title={collapsed ? item.label : undefined}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r" />
+                )}
                 <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-accent" : "text-content-muted"}`} />
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </Link>
@@ -197,34 +202,57 @@ export function Sidebar({
           })}
         </nav>
 
-        {/* Footer shortcuts info */}
+        {/* Footer info: Documentation & System Diagnostics links */}
         {!collapsed ? (
-          <div className="p-2.5 border-t border-border">
-            <button
-              type="button"
-              onClick={triggerCommandPalette}
-              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors cursor-pointer"
+          <div className="p-2.5 border-t border-border space-y-1">
+            <Link
+              to="/system"
+              onClick={handleNavClick}
+              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors"
+              title="System Diagnostics and pipeline parameters"
             >
-              <div className="flex items-center gap-1.5">
-                <Command className="w-3.5 h-3.5 text-accent" />
-                <span>Command Menu</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <Activity className="w-3.5 h-3.5 text-content-muted shrink-0" />
+                <span className="truncate">System Diagnostics</span>
               </div>
-              <kbd className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-secondary border border-border rounded-[3px]">
-                ⌘K
-              </kbd>
-            </button>
+              <span className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-muted border border-border rounded-[3px]">
+                /system
+              </span>
+            </Link>
+
+            <Link
+              to="/docs"
+              onClick={handleNavClick}
+              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors"
+              title="Documentation and technical specifications"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <BookOpen className="w-3.5 h-3.5 text-content-muted shrink-0" />
+                <span className="truncate">Documentation</span>
+              </div>
+              <span className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-muted border border-border rounded-[3px]">
+                /docs
+              </span>
+            </Link>
           </div>
         ) : (
-          <div className="p-2 border-t border-border text-center">
-            <button
-              type="button"
-              onClick={triggerCommandPalette}
+          <div className="p-2 border-t border-border flex flex-col items-center gap-1">
+            <Link
+              to="/system"
               className="p-1.5 rounded-[4px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle"
-              title="Command Menu"
-              aria-label="Command Menu"
+              title="System Diagnostics"
+              aria-label="System Diagnostics"
             >
-              <Command className="w-4 h-4" />
-            </button>
+              <Activity className="w-4 h-4" />
+            </Link>
+            <Link
+              to="/docs"
+              className="p-1.5 rounded-[4px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle"
+              title="Documentation"
+              aria-label="Documentation"
+            >
+              <BookOpen className="w-4 h-4" />
+            </Link>
           </div>
         )}
       </aside>
@@ -241,6 +269,7 @@ export function Sidebar({
                 type="button"
                 onClick={() => setShowCreateModal(false)}
                 className="p-1 rounded-[4px] text-content-muted hover:text-content-primary"
+                aria-label="Close modal"
               >
                 <X className="w-4 h-4" />
               </button>

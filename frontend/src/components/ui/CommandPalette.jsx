@@ -13,6 +13,7 @@ import {
   Upload,
   ArrowRight,
   X,
+  Activity,
 } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { useWorkspace } from "../../context/WorkspaceContext";
@@ -79,7 +80,7 @@ export function CommandPalette({ isOpen, onClose }) {
     {
       id: "nav-research",
       group: "Navigation",
-      title: "Open Research Workspace",
+      title: "Open Research Desk",
       icon: Sparkles,
       action: () => navigate("/workspace/research"),
     },
@@ -91,30 +92,37 @@ export function CommandPalette({ isOpen, onClose }) {
       action: () => navigate("/docs"),
     },
     {
+      id: "nav-system",
+      group: "Navigation",
+      title: "Open System Diagnostics",
+      icon: Activity,
+      action: () => navigate("/system"),
+    },
+    {
       id: "nav-settings",
       group: "Navigation",
-      title: "Open Settings & Runtime Diagnostics",
+      title: "Open Settings",
       icon: Settings,
-      action: () => navigate("/settings"),
+      action: () => navigate("/workspace/settings"),
     },
     {
       id: "theme-light",
       group: "Theme",
-      title: "Switch to Light Theme (Default Paper)",
+      title: "Switch to Light Theme",
       icon: Sun,
       action: () => setTheme("light"),
     },
     {
       id: "theme-dark",
       group: "Theme",
-      title: "Switch to Dark Theme (Obsidian Slate)",
+      title: "Switch to Dark Theme",
       icon: Moon,
       action: () => setTheme("dark"),
     },
     {
       id: "theme-system",
       group: "Theme",
-      title: "Match System Preference",
+      title: "Match System Theme",
       icon: Laptop,
       action: () => setTheme("system"),
     },

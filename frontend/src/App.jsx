@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import { WorkspaceLayout } from "./components/layout/WorkspaceLayout";
@@ -14,6 +14,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { DesignSystemPage } from "./pages/DesignSystemPage";
 import { DocumentViewerPage } from "./pages/DocumentViewerPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { SystemPage } from "./pages/SystemPage";
 import { CommandPalette } from "./components/ui/CommandPalette";
 
 export default function App() {
@@ -46,7 +47,10 @@ export default function App() {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/system" element={<SystemPage />} />
+
+            {/* Redirect standalone /settings to inside workspace shell */}
+            <Route path="/settings" element={<Navigate to="/workspace/settings" replace />} />
 
             {/* Document Viewer Dedicated Route */}
             <Route path="/documents/:id" element={<DocumentViewerPage />} />

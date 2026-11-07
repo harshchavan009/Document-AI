@@ -37,7 +37,11 @@ async function runE2ETests() {
     pageErrors.push(err.message);
   });
 
-  // Inject session credentials before navigating
+  // Inject session credentials and session cookie before navigating
+  await page.setCookie(
+    { name: "dm_session", value: "demo_researcher_session", domain: "localhost", path: "/" },
+    { name: "dm_session", value: "demo_researcher_session", domain: "127.0.0.1", path: "/" }
+  );
   await page.evaluateOnNewDocument((wsId) => {
     localStorage.setItem("dm_theme", "light");
     localStorage.setItem("dm_session_token", "demo_researcher_session");
@@ -136,22 +140,12 @@ async function runE2ETests() {
     // TEST 4: Settings & Diagnostics Page
     // -------------------------------------------------------------------------
     console.log("\nRunning Test 4: Settings & Runtime Diagnostics...");
-    if (!page.url().includes("settings")) {
-      await page.goto(`${BASE_URL}/workspace/settings`, { waitUntil: "networkidle0" });
-    }
+    await page.goto(`${BASE_URL}/workspace/settings`, { waitUntil: "networkidle0" });
 
-    // Verify dynamic pipeline parameters loaded
-    await page.waitForSelector("text/Parameter Specification", { timeout: 5000 });
-    const hasGenModel = await page.evaluate(() =>
-      document.body.innerText.includes("gemini-2.5-flash")
-    );
-    if (!hasGenModel) throw new Error("Runtime config did not display active generation model");
-    logStep("4.1", "Live runtime pipeline configuration verified against /api/config");
-
-    // Test theme toggle buttons
+    // Test theme toggle buttons on /workspace/settings
     const darkThemeBtn = await page.evaluateHandle(() => {
       const buttons = Array.from(document.querySelectorAll("button"));
-      return buttons.find((b) => b.textContent.includes("Charcoal Ink"));
+      return buttons.find((b) => b.textContent.trim().startsWith("Dark"));
     });
     if (darkThemeBtn) {
       await darkThemeBtn.click();
@@ -160,24 +154,33 @@ async function runE2ETests() {
         document.documentElement.getAttribute("data-theme")
       );
       if (htmlTheme !== "dark") throw new Error("Theme did not switch to dark");
-      logStep("4.2", 'Switched to "Charcoal Ink (Dark)" theme successfully');
+      logStep("4.1", 'Switched to "Dark" theme successfully');
 
       // Switch back to light
       const lightThemeBtn = await page.evaluateHandle(() => {
         const buttons = Array.from(document.querySelectorAll("button"));
-        return buttons.find((b) => b.textContent.includes("Warm Paper"));
+        return buttons.find((b) => b.textContent.trim().startsWith("Light"));
       });
       if (lightThemeBtn) {
         await lightThemeBtn.click();
         await new Promise((r) => setTimeout(r, 300));
-        logStep("4.3", 'Switched back to "Warm Paper (Light)" theme successfully');
+        logStep("4.2", 'Switched back to "Light" theme successfully');
       }
     }
 
-    // Test health probe button
+    // Navigate to /system for Parameter Specification and Diagnostics
+    await page.goto(`${BASE_URL}/system`, { waitUntil: "networkidle0" });
+    await page.waitForSelector("text/RAG Retrieval & Generation Specifications", { timeout: 6000 });
+    const hasGenModel = await page.evaluate(() =>
+      document.body.innerText.includes("gemini-2.5-flash")
+    );
+    if (!hasGenModel) throw new Error("Runtime config did not display active generation model");
+    logStep("4.3", "Live runtime pipeline configuration verified against /api/config on /system");
+
+    // Test health probe button on /system
     const probeBtn = await page.evaluateHandle(() => {
       const buttons = Array.from(document.querySelectorAll("button"));
-      return buttons.find((b) => b.textContent.includes("Probe Health"));
+      return buttons.find((b) => b.textContent.includes("Probe Health") || b.textContent.includes("Refresh Health Probe"));
     });
     if (probeBtn) {
       await probeBtn.click();
@@ -251,7 +254,7 @@ async function runE2ETests() {
     await page.goto(`${BASE_URL}/workspace/research`, { waitUntil: "networkidle0" });
 
     // Verify 3 zones
-    await page.waitForSelector("text/Source Scope", { timeout: 6000 });
+    await page.waitForSelector("text/Sources", { timeout: 6000 });
     logStep("7.1", "Zone 1 (Source Documents panel) verified");
 
     // Check chat input is available

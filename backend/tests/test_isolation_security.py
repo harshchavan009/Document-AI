@@ -64,13 +64,30 @@ def user_a_data(db_session, tmp_path):
 
 
 def test_cross_tenant_document_listing_blocked(client, user_a_data):
-    """User B cannot list User A workspace documents."""
+    """User B cannot list User A workspace documents via query param or path."""
     client.cookies.set("dm_session", "session_user_b_attacker_222")
     ws_id = user_a_data["workspace"].id
 
     res = client.get(f"/api/documents?workspace_id={ws_id}")
     assert res.status_code == 404
     assert res.json()["detail"] == "Workspace not found"
+
+    res_path = client.get(f"/api/workspaces/{ws_id}/documents")
+    assert res_path.status_code == 404
+    assert res_path.json()["detail"] == "Workspace not found"
+
+
+def test_owner_workspace_documents_listing(client, user_a_data):
+    """Owner can list documents using the direct workspace path."""
+    client.cookies.set("dm_session", user_a_data["session_id"])
+    ws_id = user_a_data["workspace"].id
+
+    res = client.get(f"/api/workspaces/{ws_id}/documents")
+    assert res.status_code == 200
+    data = res.json()
+    assert "documents" in data
+    assert len(data["documents"]) == 1
+    assert data["documents"][0]["filename"] == "private_protocol.txt"
 
 
 def test_cross_tenant_document_upload_blocked(client, user_a_data):

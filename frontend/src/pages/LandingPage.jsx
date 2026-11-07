@@ -485,6 +485,33 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Section 7: Final Pre-Footer Call to Action */}
+      <section className="py-16 sm:py-20 border-t border-border bg-surface-subtle/40">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center space-y-6">
+          <div className="space-y-3 max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary">
+              Ready to verify your research?
+            </h2>
+            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+              Upload your documents or explore the foundational Transformer paper in seconds. No account required.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link to="/workspace">
+              <Button size="lg" icon={ArrowRight}>
+                Open workspace
+              </Button>
+            </Link>
+            <Link to="/docs">
+              <Button size="lg" variant="secondary" icon={BookOpen}>
+                Read technical documentation
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="border-t border-border bg-surface py-12 px-4 sm:px-8 mt-auto text-xs text-content-secondary">
         <div className="max-w-5xl mx-auto space-y-8">

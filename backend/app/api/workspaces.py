@@ -10,11 +10,14 @@ from backend.app.models import Workspace, Document, ChatSession, ChatMessage
 from backend.app.schemas import (
     WorkspaceCreate,
     WorkspaceResponse,
-    WorkspaceListResponse
+    WorkspaceListResponse,
+    DocumentResponse,
+    DocumentListResponse
 )
 from backend.app.utils.security import (
     get_or_create_session_id,
     generate_session_token,
+    verify_workspace_access,
     SESSION_COOKIE_NAME
 )
 from backend.app.services.vector_store import VectorStoreService
@@ -250,6 +253,30 @@ def get_workspace(workspace_id: str, request: Request, db: Session = Depends(get
         document_count=doc_count,
         created_at=ws.created_at,
         updated_at=ws.updated_at
+    )
+
+
+@router.get("/{workspace_id}/documents", response_model=DocumentListResponse)
+def list_workspace_documents(
+    workspace_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Lists all documents contained within the specified workspace.
+    Enforces multi-tenant session verification and workspace boundary isolation.
+    """
+    session_id = get_or_create_session_id(request)
+    workspace = verify_workspace_access(workspace_id, session_id, db)
+    docs = (
+        db.query(Document)
+        .filter(Document.workspace_id == workspace.id)
+        .order_by(Document.created_at.desc())
+        .all()
+    )
+    return DocumentListResponse(
+        documents=[DocumentResponse.model_validate(doc) for doc in docs],
+        total=len(docs)
     )
 
 

@@ -647,6 +647,19 @@ export function ResearchPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              {(messages.length > 0 || activeSessionId) && (
+                <button
+                  type="button"
+                  onClick={startNewSession}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-surface-subtle text-content-secondary hover:text-content-primary border border-border text-xs transition-colors cursor-pointer"
+                  title="Clear conversation and start a new research thread"
+                  aria-label="Clear conversation"
+                >
+                  <Plus className="w-3.5 h-3.5 text-accent" />
+                  <span>New thread</span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => setRightPanelOpen((v) => !v)}

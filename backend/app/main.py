@@ -13,7 +13,8 @@ from backend.app.api import (
     config as config_api,
     workspaces,
     documents,
-    chat
+    chat,
+    feedback
 )
 from backend.app.utils.security import (
     SESSION_COOKIE_NAME,
@@ -22,6 +23,7 @@ from backend.app.utils.security import (
 from slowapi.errors import RateLimitExceeded
 from backend.app.utils.limiter import limiter
 from backend.app.services.job_service import JobService
+from backend.app.services.retention_service import RetentionService
 
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
@@ -41,6 +43,14 @@ async def lifespan(app: FastAPI):
     recovered_count = JobService.recover_orphan_jobs()
     if recovered_count > 0:
         logger.info(f"Startup recovery: reset {recovered_count} interrupted jobs to Failed state.")
+
+    # Automated data retention reaper for stale guest workspaces
+    try:
+        purged_workspaces = RetentionService.purge_expired_workspaces()
+        if purged_workspaces > 0:
+            logger.info(f"Startup retention: purged {purged_workspaces} expired workspaces.")
+    except Exception as e:
+        logger.warning(f"Startup retention purge error: {e}")
 
     yield
     logger.info("DocuMind AI application shutting down cleanly.")
@@ -145,6 +155,7 @@ app.include_router(config_api.router, prefix="/api")
 app.include_router(workspaces.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
+app.include_router(feedback.router, prefix="/api")
 
 
 frontend_dist = os.path.abspath(

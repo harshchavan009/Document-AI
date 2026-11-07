@@ -109,3 +109,4 @@ class GeminiCircuitBreaker:
 
 # Shared singleton instance across backend workers
 gemini_circuit_breaker = GeminiCircuitBreaker()
+

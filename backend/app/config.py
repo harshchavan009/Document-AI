@@ -54,6 +54,9 @@ class Settings(BaseSettings):
     SAMPLE_RATE_LIMIT: str = "10/minute"
     QUERY_RATE_LIMIT: str = "30/minute"
 
+    # Data Lifecycle and Retention
+    DATA_RETENTION_DAYS: int = 7
+
     # Retrieval and AI Generation
     DEFAULT_TOP_K: int = 5
     RELEVANCE_THRESHOLD: float = 0.65

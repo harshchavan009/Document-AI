@@ -10,6 +10,7 @@ class ConfigResponse(BaseModel):
     max_file_size_bytes: int
     max_file_size_mb: int
     max_pdf_pages: int
+    data_retention_days: int
     default_chunk_size: int
     default_chunk_overlap: int
     default_top_k: int
@@ -179,3 +180,16 @@ class SuggestedQuestionsRequest(BaseModel):
 
 class SuggestedQuestionsResponse(BaseModel):
     questions: List[str]
+
+
+# Feedback Schemas
+class FeedbackCreate(BaseModel):
+    category: str = Field(default="general", max_length=32)
+    comment: str = Field(min_length=3, max_length=2000)
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
+
+
+class FeedbackResponse(BaseModel):
+    success: bool
+    message: str
+    id: str

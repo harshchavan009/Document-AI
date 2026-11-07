@@ -84,6 +84,7 @@ def test_api_config_endpoint_returns_dynamic_configuration(client):
     assert data["max_file_size_mb"] > 0
     assert data["max_file_size_bytes"] > 0
     assert data["max_pdf_pages"] == 50
+    assert data["data_retention_days"] == 7
     assert data["default_chunk_size"] == 600
     assert data["default_chunk_overlap"] == 100
     assert data["default_top_k"] == 5

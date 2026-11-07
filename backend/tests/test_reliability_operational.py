@@ -137,3 +137,4 @@ def test_gemini_circuit_breaker_tripping_and_cooldown(client, sample_workspace):
     # Reset breaker
     gemini_circuit_breaker.reset()
     assert gemini_circuit_breaker.is_open is False
+

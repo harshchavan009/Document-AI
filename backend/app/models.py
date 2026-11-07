@@ -114,3 +114,14 @@ class MessageCitation(Base):
 
     message = relationship("ChatMessage", back_populates="citations")
 
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    session_id = Column(String(64), nullable=False, index=True)
+    category = Column(String(32), nullable=False)
+    comment = Column(Text, nullable=False)
+    rating = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
+

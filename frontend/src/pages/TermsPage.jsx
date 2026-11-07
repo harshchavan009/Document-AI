@@ -75,10 +75,10 @@ export function TermsPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-serif font-semibold text-content-primary">
-              3. Service Limitations and Enforced Limits
+              3. Service Limitations and Enforced Boundaries
             </h2>
             <p>
-              File sizes, token windows, and rate limits are enforced dynamically by backend configuration. The software is provided as-is without representations of uninterrupted uptime or fitness for emergency operations.
+              File uploads are restricted to genuine PDF and TXT documents up to 20 MB each and 50 pages per PDF document. Request rates are limited per IP and visitor session (20 uploads per minute, 30 queries per minute). Workspaces not accessed for more than 7 days are subject to automated data retention purging. The software is provided as-is without representations of uninterrupted uptime or fitness for emergency operations.
             </p>
           </section>
         </div>

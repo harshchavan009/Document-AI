@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Sun, Moon, Layers, ChevronRight, Search, ExternalLink, Menu } from "lucide-react";
+import { Sun, Moon, Layers, ChevronRight, Search, ExternalLink, Menu, MessageSquare } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import { FeedbackModal } from "../ui/FeedbackModal";
 
 export function Header({ onToggleSidebar }) {
   const { resolvedTheme, toggleTheme } = useTheme();
   const { activeWorkspace } = useWorkspace();
   const location = useLocation();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const getBreadcrumbs = () => {
     const path = location.pathname;
@@ -65,6 +67,16 @@ export function Header({ onToggleSidebar }) {
 
         <button
           type="button"
+          onClick={() => setFeedbackOpen(true)}
+          className="p-1.5 rounded-[5px] hover:bg-surface-subtle text-content-secondary hover:text-content-primary transition-colors cursor-pointer"
+          title="Share feedback or report an issue"
+          aria-label="Share feedback"
+        >
+          <MessageSquare className="w-4 h-4" />
+        </button>
+
+        <button
+          type="button"
           onClick={toggleTheme}
           className="p-1.5 rounded-[5px] hover:bg-surface-subtle text-content-secondary hover:text-content-primary transition-colors cursor-pointer"
           title={`Switch to ${resolvedTheme === "light" ? "dark" : "light"} theme`}
@@ -82,6 +94,11 @@ export function Header({ onToggleSidebar }) {
           <ExternalLink className="w-4 h-4" />
         </Link>
       </div>
+
+      <FeedbackModal
+        isOpen={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
     </header>
   );
 }

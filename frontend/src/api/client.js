@@ -298,4 +298,43 @@ export const api = {
     });
     return handleResponse(res);
   },
+
+  // Lifecycle, Purge and Export
+  async purgeSessionData() {
+    const res = await authFetch(`${BASE_URL}/workspaces/purge-session`, {
+      method: "DELETE",
+    });
+    const data = await handleResponse(res);
+    if (data.new_session_id) {
+      localStorage.setItem("dm_session_token", data.new_session_id);
+    }
+    return data;
+  },
+
+  async downloadSessionExport() {
+    const res = await authFetch(`${BASE_URL}/workspaces/export-session`);
+    if (!res.ok) {
+      throw new ApiError(`Export failed with status ${res.status}`, res.status);
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `documind_export_${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    return true;
+  },
+
+  // User Feedback
+  async submitFeedback({ category, comment, rating }) {
+    const res = await authFetch(`${BASE_URL}/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ category, comment, rating }),
+    });
+    return handleResponse(res);
+  },
 };

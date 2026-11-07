@@ -17,17 +17,21 @@ import {
   FileText,
   AlertCircle,
   ExternalLink,
+  Download,
+  MessageSquare,
+  Clock,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { api, getSessionToken } from "../api/client";
 import { StatusDot } from "../components/ui/StatusDot";
 import { Button } from "../components/ui/Button";
+import { FeedbackModal } from "../components/ui/FeedbackModal";
 
 export function SettingsPage() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const { activeWorkspace, workspaces, switchWorkspace } = useWorkspace();
+  const { activeWorkspace, workspaces, switchWorkspace, refreshWorkspaces } = useWorkspace();
 
   const [config, setConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
@@ -37,6 +41,11 @@ export function SettingsPage() {
   const [pinging, setPinging] = useState(false);
 
   const [copiedToken, setCopiedToken] = useState(false);
+  const [purging, setPurging] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [purgeConfirmOpen, setPurgeConfirmOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [purgeSuccess, setPurgeSuccess] = useState(false);
 
   // Load runtime config
   const fetchRuntimeConfig = async () => {
@@ -90,6 +99,36 @@ export function SettingsPage() {
       localStorage.removeItem("dm_session_token");
       localStorage.removeItem("dm_active_workspace");
       window.location.reload();
+    }
+  };
+
+  const handlePurgeAllData = async () => {
+    setPurging(true);
+    try {
+      await api.purgeSessionData();
+      localStorage.removeItem("dm_active_workspace");
+      setPurgeConfirmOpen(false);
+      setPurgeSuccess(true);
+      await refreshWorkspaces();
+      setTimeout(() => {
+        setPurgeSuccess(false);
+        navigate("/workspace");
+      }, 1500);
+    } catch (err) {
+      alert("Failed to purge data: " + (err.message || "Unknown error"));
+    } finally {
+      setPurging(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      await api.downloadSessionExport();
+    } catch (err) {
+      alert("Failed to export data: " + (err.message || "Unknown error"));
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -392,10 +431,10 @@ export function SettingsPage() {
           <div>
             <h2 className="text-sm font-semibold text-content-primary flex items-center gap-2">
               <Shield className="w-4 h-4 text-accent" />
-              <span>Workspace & Visitor Session Identity</span>
+              <span>Workspace, Privacy & Data Lifecycle</span>
             </h2>
             <p className="text-xs text-content-secondary mt-1">
-              Your research desk operates without mandatory logins. Data is bound to your unique cryptographic visitor token.
+              Your research desk operates without mandatory logins. Data is bound strictly to your unique cryptographic visitor token.
             </p>
           </div>
 
@@ -432,22 +471,150 @@ export function SettingsPage() {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-border flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[11px] text-content-secondary">
-                To start completely fresh with a new workspace and blank research canvas:
-              </span>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleResetSession}
-                className="inline-flex items-center gap-1.5 text-xs"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Reset Visitor Session</span>
-              </Button>
+            {/* Retention Notice */}
+            <div className="p-3 rounded-[5px] bg-surface-subtle border border-border flex items-start gap-2.5">
+              <Clock className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold text-content-primary block">
+                  Automated Data Retention Policy
+                </span>
+                <p className="text-[11px] text-content-secondary leading-normal">
+                  Guest workspaces are automatically purged after {config?.data_retention_days || 7} days of inactivity. Download your research export below to preserve documents and conversations locally.
+                </p>
+              </div>
+            </div>
+
+            {/* Actions Grid */}
+            <div className="pt-3 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Export Data */}
+              <div className="p-3 rounded-[5px] border border-border bg-surface space-y-2 flex flex-col justify-between">
+                <div>
+                  <span className="font-semibold text-content-primary block">Export My Data</span>
+                  <p className="text-[11px] text-content-muted mt-0.5">
+                    Download raw files, citations, and conversation logs in a .zip archive.
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={handleExportData}
+                  loading={exporting}
+                  disabled={exporting}
+                  className="w-full inline-flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download .zip</span>
+                </Button>
+              </div>
+
+              {/* Send Feedback */}
+              <div className="p-3 rounded-[5px] border border-border bg-surface space-y-2 flex flex-col justify-between">
+                <div>
+                  <span className="font-semibold text-content-primary block">Feedback & Issues</span>
+                  <p className="text-[11px] text-content-muted mt-0.5">
+                    Report a bug, suggest features, or share thoughts directly with the maintainers.
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => setFeedbackModalOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-1.5"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Send Feedback</span>
+                </Button>
+              </div>
+
+              {/* Purge All Data */}
+              <div className="p-3 rounded-[5px] border border-semantic-error-border/40 bg-semantic-error-surface/20 space-y-2 flex flex-col justify-between">
+                <div>
+                  <span className="font-semibold text-semantic-error-text block">Delete All My Data</span>
+                  <p className="text-[11px] text-content-muted mt-0.5">
+                    Permanently delete all files, vectors, and chat history from the server.
+                  </p>
+                </div>
+                <Button
+                  variant="danger"
+                  size="xs"
+                  onClick={() => setPurgeConfirmOpen(true)}
+                  className="w-full inline-flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete All Data</span>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* Purge Confirmation Modal */}
+        {purgeConfirmOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="purge-modal-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150"
+          >
+            <div className="w-full max-w-md rounded-[8px] bg-surface border border-semantic-error-border shadow-lg p-5 space-y-4">
+              <div className="flex items-center gap-2 text-semantic-error-text">
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                <h3 id="purge-modal-title" className="text-sm font-semibold">
+                  Permanently delete all research data?
+                </h3>
+              </div>
+              <p className="text-xs text-content-secondary leading-relaxed">
+                This action is immediate and irreversible. It will permanently remove:
+              </p>
+              <ul className="list-disc list-inside text-xs text-content-secondary space-y-1 font-mono text-[11px]">
+                <li>All uploaded PDF and TXT files from physical disk</li>
+                <li>All vector embeddings from ChromaDB</li>
+                <li>All conversation threads and citation history from SQLite</li>
+                <li>Your current visitor session token</li>
+              </ul>
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => setPurgeConfirmOpen(false)}
+                  disabled={purging}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  size="xs"
+                  onClick={handlePurgeAllData}
+                  loading={purging}
+                  disabled={purging}
+                >
+                  Yes, Delete Everything
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Purge Success Overlay */}
+        {purgeSuccess && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <div className="p-6 rounded-[8px] bg-surface border border-border shadow-xl text-center space-y-2">
+              <Check className="w-8 h-8 text-semantic-success-text mx-auto" />
+              <h3 className="text-sm font-semibold text-content-primary">
+                All data successfully purged
+              </h3>
+              <p className="text-xs text-content-secondary">
+                Returning you to a fresh research workspace...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Feedback Modal */}
+        <FeedbackModal
+          isOpen={feedbackModalOpen}
+          onClose={() => setFeedbackModalOpen(false)}
+        />
       </main>
     </div>
   );

@@ -84,10 +84,30 @@ export function PrivacyPage() {
 
           <section className="space-y-2">
             <h2 className="text-base font-serif font-semibold text-content-primary">
-              4. Data Retention and Permanent Purging
+              4. Data Retention, Export and Permanent Purging
             </h2>
             <p>
-              You retain complete control over your data. Deleting a document from the Document Library immediately and permanently removes the file from disk, deletes all associated database rows, and purges all corresponding vector embeddings from ChromaDB. You can also reset your visitor session at any time from the Settings page.
+              You retain complete ownership and control over your research materials:
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-content-secondary pl-1">
+              <li>
+                <strong>Automated Lifecycle:</strong> Guest workspaces and uploaded documents are automatically purged from the system after 7 days of inactivity.
+              </li>
+              <li>
+                <strong>Immediate Self-Service Purge:</strong> Clicking "Delete All My Data" in Settings permanently removes all disk files, ChromaDB vector embeddings, and database rows immediately.
+              </li>
+              <li>
+                <strong>Complete Data Export:</strong> You can export a comprehensive .zip archive of all your uploaded source files, conversation transcripts, and citation metadata at any time.
+              </li>
+            </ul>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-base font-serif font-semibold text-content-primary">
+              5. Grounding Verification and Limitations
+            </h2>
+            <p>
+              DocuMind AI enforces algorithmic server-side citation validation to ensure all cited passages correspond to retrieved chunks from your documents. This validation prevents fabricated citation numbers, but it does not constitute an infallible guarantee of factual truth. Users are advised to review the linked primary passages in context before making research or business decisions.
             </p>
           </section>
         </div>

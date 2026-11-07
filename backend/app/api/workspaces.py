@@ -1,14 +1,24 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, status
+import os
+import io
+import zipfile
+import json
+from datetime import datetime, timezone
+from fastapi import APIRouter, Depends, Request, Response, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.models import Workspace, Document
+from backend.app.models import Workspace, Document, ChatSession, ChatMessage
 from backend.app.schemas import (
     WorkspaceCreate,
     WorkspaceResponse,
     WorkspaceListResponse
 )
-from backend.app.utils.security import get_or_create_session_id
+from backend.app.utils.security import (
+    get_or_create_session_id,
+    generate_session_token,
+    SESSION_COOKIE_NAME
+)
 from backend.app.services.vector_store import VectorStoreService
+from backend.app.config import settings
 
 router = APIRouter(prefix="/workspaces", tags=["Workspaces"])
 
@@ -70,6 +80,150 @@ def create_workspace(
         document_count=0,
         created_at=ws.created_at,
         updated_at=ws.updated_at
+    )
+
+
+@router.delete("/purge-session")
+def purge_session_data(request: Request, response: Response, db: Session = Depends(get_db)):
+    """
+    Atomically purges all workspaces, uploaded documents, disk files,
+    ChromaDB vectors, and chat sessions for the active visitor session.
+    Assigns a fresh session token upon completion.
+    """
+    session_id = get_or_create_session_id(request)
+    workspaces = db.query(Workspace).filter(Workspace.session_id == session_id).all()
+    vs = VectorStoreService()
+
+    for ws in workspaces:
+        docs = db.query(Document).filter(Document.workspace_id == ws.id).all()
+        for d in docs:
+            if d.storage_path and os.path.exists(d.storage_path):
+                try:
+                    os.remove(d.storage_path)
+                except Exception as e:
+                    pass
+
+        try:
+            vs.delete_workspace(ws.id)
+        except Exception:
+            pass
+
+        db.delete(ws)
+
+    db.commit()
+
+    # Issue a brand new session token so client starts completely fresh
+    new_token = generate_session_token()
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=new_token,
+        httponly=True,
+        samesite="lax",
+        secure=settings.APP_ENV == "production",
+        max_age=60 * 60 * 24 * 30
+    )
+    response.headers["X-New-Session-ID"] = new_token
+
+    return {
+        "success": True,
+        "message": "All workspace data, documents, vector embeddings, and conversation records have been permanently purged.",
+        "new_session_id": new_token
+    }
+
+
+@router.get("/export-session")
+def export_session_data(request: Request, db: Session = Depends(get_db)):
+    """
+    Packages all uploaded files and conversation histories for the active session
+    into a downloadable .zip archive.
+    """
+    session_id = get_or_create_session_id(request)
+    workspaces = db.query(Workspace).filter(Workspace.session_id == session_id).all()
+
+    buf = io.BytesIO()
+    timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as archive:
+        manifest_docs = []
+        manifest_chats = []
+
+        for ws in workspaces:
+            # 1. Archive documents
+            docs = db.query(Document).filter(Document.workspace_id == ws.id).all()
+            for d in docs:
+                manifest_docs.append({
+                    "id": d.id,
+                    "filename": d.filename,
+                    "workspace": ws.name,
+                    "page_count": d.page_count,
+                    "chunk_count": d.chunk_count,
+                    "file_size": d.file_size
+                })
+                if d.storage_path and os.path.exists(d.storage_path):
+                    with open(d.storage_path, "rb") as fp:
+                        archive.writestr(f"documents/{ws.name}/{d.filename}", fp.read())
+
+            # 2. Archive chat conversations
+            chats = db.query(ChatSession).filter(ChatSession.workspace_id == ws.id).all()
+            for cs in chats:
+                messages = (
+                    db.query(ChatMessage)
+                    .filter(ChatMessage.session_id == cs.id)
+                    .order_by(ChatMessage.created_at.asc())
+                    .all()
+                )
+                chat_data = {
+                    "id": cs.id,
+                    "title": cs.title,
+                    "workspace": ws.name,
+                    "created_at": cs.created_at.isoformat() if cs.created_at else None,
+                    "messages": [
+                        {
+                            "role": m.role,
+                            "content": m.content,
+                            "retrieval_query": m.retrieval_query,
+                            "created_at": m.created_at.isoformat() if m.created_at else None,
+                            "citations": [
+                                {
+                                    "citation_index": c.citation_index,
+                                    "page_number": c.page_number,
+                                    "excerpt": c.excerpt
+                                }
+                                for c in m.citations
+                            ]
+                        }
+                        for m in messages
+                    ]
+                }
+                manifest_chats.append({"id": cs.id, "title": cs.title})
+                safe_title = "".join(c for c in cs.title if c.isalnum() or c in " _-")[:40] or cs.id[:8]
+                archive.writestr(
+                    f"conversations/{ws.name}/{safe_title}.json",
+                    json.dumps(chat_data, indent=2)
+                )
+
+        # 3. Write manifest.json
+        manifest = {
+            "app": "DocuMind AI",
+            "version": settings.APP_VERSION,
+            "export_date": datetime.now(timezone.utc).isoformat(),
+            "workspaces_count": len(workspaces),
+            "documents_count": len(manifest_docs),
+            "conversations_count": len(manifest_chats),
+            "documents": manifest_docs,
+            "conversations": manifest_chats
+        }
+        archive.writestr("manifest.json", json.dumps(manifest, indent=2))
+
+    buf.seek(0)
+    filename = f"documind_export_{timestamp_str}.zip"
+
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
     )
 
 

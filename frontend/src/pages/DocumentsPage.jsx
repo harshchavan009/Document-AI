@@ -27,10 +27,13 @@ import { EmptyState } from "../components/ui/EmptyState";
 import { SkeletonLoader } from "../components/ui/SkeletonLoader";
 import { DocumentPreviewModal } from "../components/documents/DocumentPreviewModal";
 import { UploadTray } from "../components/documents/UploadTray";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function DocumentsPage() {
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
+
+  usePageMeta("Document Library", "Manage, inspect, and organize indexed research documents.");
 
   const [documents, setDocuments] = useState([]);
   const [config, setConfig] = useState(null);

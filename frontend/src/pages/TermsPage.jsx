@@ -4,10 +4,13 @@ import { ArrowLeft, FileCheck, Sun, Moon } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { BrandWordmark } from "../components/ui/BrandMark";
 import { useTheme } from "../context/ThemeContext";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function TermsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+
+  usePageMeta("Terms of Service", "Acceptable use guidelines, AI citation verification expectations, and terms.");
 
   return (
     <div className="min-h-screen bg-canvas text-content-primary flex flex-col">

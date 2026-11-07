@@ -25,9 +25,12 @@ import { Button } from "../components/ui/Button";
 import { BrandWordmark } from "../components/ui/BrandMark";
 import { useTheme } from "../context/ThemeContext";
 import { api } from "../api/client";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function DocsPage() {
   const { theme, toggleTheme } = useTheme();
+
+  usePageMeta("Documentation", "System architecture, API specifications, and retrieval pipeline details.");
   const [config, setConfig] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");

@@ -20,10 +20,13 @@ import { StatusDot } from "../components/ui/StatusDot";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { SkeletonLoader } from "../components/ui/SkeletonLoader";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function HomePage() {
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
+
+  usePageMeta("Workspace", "Explore documents and query knowledge in your research workspace.");
 
   const [query, setQuery] = useState("");
   const [documents, setDocuments] = useState([]);

@@ -27,11 +27,14 @@ import { api, getSessionToken } from "../api/client";
 import { StatusDot } from "../components/ui/StatusDot";
 import { Button } from "../components/ui/Button";
 import { FeedbackModal } from "../components/ui/FeedbackModal";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function SettingsPage() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { activeWorkspace, workspaces, switchWorkspace, refreshWorkspaces } = useWorkspace();
+
+  usePageMeta("Settings", "Manage workspace preferences, system status, data export, and session retention.");
 
   const [config, setConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);

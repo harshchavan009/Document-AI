@@ -23,6 +23,7 @@ import { Button } from "../components/ui/Button";
 import { BrandWordmark, BrandMark } from "../components/ui/BrandMark";
 import { useTheme } from "../context/ThemeContext";
 import { api } from "../api/client";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 function GitHubIcon({ className = "w-4 h-4" }) {
   return (
@@ -38,6 +39,10 @@ function GitHubIcon({ className = "w-4 h-4" }) {
 
 export function LandingPage() {
   const { theme, toggleTheme } = useTheme();
+  usePageMeta(
+    "DocuMind AI: Grounded Document Intelligence",
+    "DocuMind AI is an intelligent document research platform providing verified answers grounded in PDF and text documents with page-level citations."
+  );
   const [config, setConfig] = useState(null);
   const [health, setHealth] = useState(null);
 

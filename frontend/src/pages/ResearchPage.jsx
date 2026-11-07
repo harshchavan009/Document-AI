@@ -30,11 +30,14 @@ import { EvidenceExcerpt, SourceCard } from "../components/ui/EvidenceExcerpt";
 import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { DocumentReader } from "../components/documents/DocumentReader";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function ResearchPage() {
   const { activeWorkspace } = useWorkspace();
   const [searchParams] = useSearchParams();
   const queryDocId = searchParams.get("docId");
+
+  usePageMeta("Research Assistant", "Ask questions and inspect grounded citations across indexed documents.");
 
   // Documents state for left scoping panel
   const [documents, setDocuments] = useState([]);

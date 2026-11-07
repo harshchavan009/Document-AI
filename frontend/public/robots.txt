@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /docs
+Allow: /privacy
+Allow: /terms
+Disallow: /api/
+Disallow: /workspace/
+Disallow: /documents/
+
+Sitemap: https://documind-ai.com/sitemap.xml

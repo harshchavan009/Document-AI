@@ -18,12 +18,18 @@ import { api } from "../api/client";
 import { StatusDot } from "../components/ui/StatusDot";
 import { Button } from "../components/ui/Button";
 import { DocumentReader } from "../components/documents/DocumentReader";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function DocumentViewerPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [document, setDocument] = useState(null);
+
+  usePageMeta(
+    document?.filename ? `${document.filename} | DocuMind AI` : "Document Viewer",
+    "Inspect indexed document contents and page excerpts."
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showMetadata, setShowMetadata] = useState(false);

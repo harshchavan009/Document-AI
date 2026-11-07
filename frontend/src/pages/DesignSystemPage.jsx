@@ -20,10 +20,13 @@ import { BrandWordmark, BrandMark } from "../components/ui/BrandMark";
 import { EmptyState } from "../components/ui/EmptyState";
 import { SkeletonLoader } from "../components/ui/SkeletonLoader";
 import { useTheme } from "../context/ThemeContext";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function DesignSystemPage() {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   const [activeCitation, setActiveCitation] = useState(1);
+
+  usePageMeta("Design System", "Interactive living showcase of DocuMind AI design tokens and UI components.");
 
   const sampleCitation = {
     citation_index: 1,

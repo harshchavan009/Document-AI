@@ -4,10 +4,13 @@ import { ArrowLeft, Shield, Sun, Moon } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { BrandWordmark } from "../components/ui/BrandMark";
 import { useTheme } from "../context/ThemeContext";
+import { usePageMeta } from "../hooks/usePageMeta";
 
 export function PrivacyPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+
+  usePageMeta("Privacy Policy", "How DocuMind AI stores, handles, and automatically purges your document data.");
 
   return (
     <div className="min-h-screen bg-canvas text-content-primary flex flex-col">

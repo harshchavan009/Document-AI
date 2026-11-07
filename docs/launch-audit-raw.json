@@ -6,7 +6,7 @@
       "version": "1.0.0",
       "database": "connected",
       "vector_store": "ready",
-      "timestamp": "2026-11-07T13:37:20.231407Z"
+      "timestamp": "2026-11-07T14:11:06.495878Z"
     }
   },
   "config": {
@@ -23,6 +23,7 @@
       "max_file_size_bytes": 20971520,
       "max_file_size_mb": 20,
       "max_pdf_pages": 50,
+      "data_retention_days": 7,
       "default_chunk_size": 600,
       "default_chunk_overlap": 100,
       "default_top_k": 5,
@@ -46,11 +47,11 @@
     },
     "path_traversal": {
       "status": 202,
-      "response": "{\"uploaded\":[{\"id\":\"ea646fea-eac1-48f6-ae5e-fdc68359f7ae\",\"filename\":\"passwd.txt\",\"file_size\":22,\"file_type\":\"text/plain\",\"status\":\"Uploaded\",\"created_at\":\"2026-11-07T13:37:20.253968\"}],\"rejected\":[]}"
+      "response": "{\"uploaded\":[{\"id\":\"ae2a8c4c-5151-4e6b-a978-4be09e5c6e8c\",\"filename\":\"passwd.txt\",\"file_size\":22,\"file_type\":\"text/plain\",\"status\":\"Uploaded\",\"created_at\":\"2026-11-07T14:11:06.513904\"}],\"rejected\":[]}"
     },
     "unicode_filename": {
       "status": 202,
-      "response": "{\"uploaded\":[{\"id\":\"0cab3690-af13-4d57-85e0-5f7f1715bd5e\",\"filename\":\"R\u00e9sum\u00e9_Recherche_\u65e5\u672c\u8a9e_2026.txt\",\"file_size\":93,\"file_type\":\"text/plain\",\"status\":\"Uploaded\",\"created_at\":\"2026-11-07T13:37:20.259374\"}],\"rejected\":[]}"
+      "response": "{\"uploaded\":[{\"id\":\"07f7d23b-95ac-413d-bdef-9a84142d2fe5\",\"filename\":\"R\u00e9sum\u00e9_Recherche_\u65e5\u672c\u8a9e_2026.txt\",\"file_size\":93,\"file_type\":\"text/plain\",\"status\":\"Uploaded\",\"created_at\":\"2026-11-07T14:11:06.519072\"}],\"rejected\":[]}"
     }
   },
   "isolation": {
@@ -82,6 +83,6 @@
   },
   "git_secrets": {
     "status": "LEAK_FOUND",
-    "snippet": "commit 5ae3b52c6d106f6eeb138ffc60f140d34582afcf\nAuthor: Harsh Chavan <harshchavan1030@gmail.com>\nDate:   Sat Nov 7 18:50:54 2026 +0530\n\n    Step 1 and Step 2: Comprehensive launch audit with cross-ten"
+    "snippet": "commit 04bb405ff0c2bf3932541b7634f6130c78134350\nAuthor: Harsh Chavan <harshchavan1030@gmail.com>\nDate:   Sat Nov 7 19:40:14 2026 +0530\n\n    Phase L4: Search discoverability assets, OpenGraph cards, ro"
   }
 }

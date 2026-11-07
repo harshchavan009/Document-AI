@@ -223,17 +223,22 @@ Open your browser at `http://localhost:5173`.
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | Returns service health, database status, and vector store readiness. |
-| `GET` | `/api/config` | Serves dynamic runtime limits, active models, chunk sizes, and permitted extensions. |
+| `GET` | `/api/health` | Returns basic liveness status. |
+| `GET` | `/api/ready` | Deep readiness probe verifying database read/write, ChromaDB collection, and storage space. |
+| `GET` | `/api/config` | Serves dynamic runtime limits, active models, chunk sizes, retention window, and permitted types. |
 | `GET` | `/api/workspaces` | Lists workspaces for current visitor session. |
 | `POST` | `/api/workspaces` | Creates a new isolated workspace. |
+| `DELETE` | `/api/workspaces/purge-session` | Permanently deletes all documents, vector embeddings, and session state. |
+| `GET` | `/api/workspaces/export-session` | Streams in-memory ZIP archive containing documents, JSON transcripts, and manifest. |
 | `POST` | `/api/documents/upload` | Validates magic bytes, checks SHA-256 duplicate hash, and enqueues background processing. |
+| `POST` | `/api/documents/sample` | Ingests Attention Is All You Need sample research paper for zero-friction onboarding. |
 | `GET` | `/api/documents` | Lists documents in workspace with live processing status, page count, and chunk count. |
 | `GET` | `/api/documents/{id}/file` | Serves binary file with security headers for in-browser PDF.js preview. |
 | `DELETE` | `/api/documents/{id}` | Deletes document record, disk file, and ChromaDB vector embeddings. |
 | `POST` | `/api/chat/suggested-questions` | Generates 3 contextual research questions grounded in workspace documents. |
 | `POST` | `/api/chat/query/stream` | Server-Sent Events endpoint streaming answer tokens and verified citation metadata. |
 | `GET` | `/api/chat/sessions` | Lists prior research conversation threads for active workspace. |
+| `POST` | `/api/feedback` | Records user feedback with category, star rating, and comments. |
 
 ---
 
@@ -251,7 +256,7 @@ Document-AI/
 │   │   ├── database.py           # SQLAlchemy SQLite connection
 │   │   ├── models.py             # Relational ORM models
 │   │   └── main.py               # FastAPI application entry point
-│   ├── tests/                    # Pytest test suite (25 tests)
+│   ├── tests/                    # Pytest test suite (43 tests)
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
@@ -268,10 +273,15 @@ Document-AI/
 │   │   └── e2e.test.js           # Automated Puppeteer end-to-end browser journeys
 │   ├── package.json
 │   └── vite.config.js
+├── Dockerfile                    # Multi-stage production container
+├── docker-compose.yml            # Local production container parity
 └── docs/
+    ├── deployment-guide.md       # Production hosting and cloud deployment guide
+    ├── launch-audit.md           # Full repository security and functionality audit
+    ├── launch-plan.md            # Approved launch plan and architectural blueprint
     ├── redesign-audit.md         # Step 1: Initial build audit and defect catalog
     ├── redesign-research.md      # Step 2: Real product analysis (NotebookLM, Perplexity, Linear, Notion)
     ├── redesign-brief.md         # Step 3: Approved design brief and system tokens
     ├── redesign-verification-r5.md # Phase R5: WCAG 2.1 AA and E2E verification report
-    └── launch-checklist.md       # Phase R6: Launch and operational verification checklist
+    └── launch-checklist.md       # Operational verification checklist
 ```

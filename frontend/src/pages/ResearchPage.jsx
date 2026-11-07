@@ -20,15 +20,14 @@ import {
   RefreshCw,
   SlidersHorizontal,
   X,
-  HelpCircle,
   Quote,
+  Upload,
 } from "lucide-react";
 import { useWorkspace } from "../context/WorkspaceContext";
 import { api } from "../api/client";
 import { CitationMarker } from "../components/ui/CitationMarker";
 import { EvidenceExcerpt, SourceCard } from "../components/ui/EvidenceExcerpt";
 import { Button } from "../components/ui/Button";
-import { EmptyState } from "../components/ui/EmptyState";
 import { DocumentReader } from "../components/documents/DocumentReader";
 import { usePageMeta } from "../hooks/usePageMeta";
 
@@ -38,11 +37,12 @@ export function ResearchPage() {
   const queryDocId = searchParams.get("docId");
   const initialQuery = searchParams.get("q") || "";
 
-  usePageMeta("Research Assistant", "Ask questions and inspect grounded citations across indexed documents.");
+  usePageMeta("Research Desk", "Ask questions and inspect grounded citations across indexed documents.");
 
   // Documents state for left scoping panel
   const [documents, setDocuments] = useState([]);
   const [selectedDocIds, setSelectedDocIds] = useState(new Set());
+  const [ingestingSample, setIngestingSample] = useState(false);
 
   // Conversation and chat sessions state
   const [sessions, setSessions] = useState([]);
@@ -62,8 +62,8 @@ export function ResearchPage() {
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  // Inspector Panel (Right Zone) state
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  // Inspector Panel (Right Zone) state: collapsed by default on clean desk
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [rightTab, setRightTab] = useState("passages"); // "passages" | "document"
   const [inspectedDocId, setInspectedDocId] = useState(null);
   const [inspectedPage, setInspectedPage] = useState(1);
@@ -78,6 +78,10 @@ export function ResearchPage() {
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
+  const isMac =
+    typeof navigator !== "undefined" &&
+    /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -91,14 +95,14 @@ export function ResearchPage() {
     if (!activeWorkspace) return;
     try {
       const res = await api.getDocuments(activeWorkspace.id);
-      const readyDocs = (res.documents || []).filter((d) => d.status === "Ready");
+      const readyDocs = (res.documents || []).filter(
+        (d) => d.status.toLowerCase() === "ready"
+      );
       setDocuments(readyDocs);
 
       if (queryDocId) {
-        // If query param docId was passed, scope specifically to that document
         setSelectedDocIds(new Set([queryDocId]));
       } else {
-        // Select all ready docs by default
         setSelectedDocIds(new Set(readyDocs.map((d) => d.id)));
       }
     } catch (err) {
@@ -143,7 +147,28 @@ export function ResearchPage() {
     if (documents.length > 0 && messages.length === 0) {
       loadSuggestedQuestions();
     }
-  }, [documents.length, messages.length, selectedDocIds]);
+  }, [documents.length, messages.length, selectedDocIds, loadSuggestedQuestions]);
+
+  // If initial query was passed via query parameter, auto-submit once documents are ready
+  useEffect(() => {
+    if (initialQuery && documents.length > 0 && messages.length === 0 && !streaming) {
+      handleSubmit(initialQuery);
+    }
+  }, [initialQuery, documents.length]);
+
+  // Ingest sample document directly from research desk
+  const handleIngestSample = async () => {
+    if (!activeWorkspace) return;
+    try {
+      setIngestingSample(true);
+      await api.ingestSampleDocument(activeWorkspace.id);
+      await loadDocuments();
+    } catch (err) {
+      alert("Failed to load sample document: " + err.message);
+    } finally {
+      setIngestingSample(false);
+    }
+  };
 
   // Switch chat session
   const switchSession = async (sId) => {
@@ -160,10 +185,12 @@ export function ResearchPage() {
       const lastAsst = [...msgs].reverse().find((m) => m.role === "assistant");
       if (lastAsst && lastAsst.citations && lastAsst.citations.length > 0) {
         setCurrentSources(lastAsst.citations);
-        // Pre-select first citation in inspector
         setInspectedDocId(lastAsst.citations[0].document_id);
         setInspectedPage(lastAsst.citations[0].page_number || 1);
         setInspectedExcerpt(lastAsst.citations[0].excerpt || "");
+        setRightPanelOpen(true);
+      } else {
+        setRightPanelOpen(false);
       }
     } catch (err) {
       console.error("Failed to load session messages:", err);
@@ -180,6 +207,7 @@ export function ResearchPage() {
     setStreamDelta("");
     setCurrentSources([]);
     setActiveCitationIndex(null);
+    setRightPanelOpen(false);
     setQuestion("");
     loadSuggestedQuestions();
   };
@@ -283,7 +311,6 @@ export function ResearchPage() {
 
     let fullAnswer = "";
     let validatedSources = [];
-    let assignedSessionId = activeSessionId;
 
     await api.streamQueryChat(
       activeWorkspace.id,
@@ -293,7 +320,6 @@ export function ResearchPage() {
       5,
       (event, data) => {
         if (event === "session_info" && data?.session_id) {
-          assignedSessionId = data.session_id;
           setActiveSessionId(data.session_id);
         } else if (event === "text_delta" && data?.delta) {
           fullAnswer += data.delta;
@@ -305,6 +331,7 @@ export function ResearchPage() {
             setInspectedDocId(data.sources[0].document_id);
             setInspectedPage(data.sources[0].page_number || 1);
             setInspectedExcerpt(data.sources[0].excerpt || "");
+            setRightPanelOpen(true);
           }
         }
       },
@@ -345,7 +372,7 @@ export function ResearchPage() {
     setTimeout(() => setCopiedMsgId(null), 2000);
   };
 
-  // Render text and replace inline citations [1], [2] with interactive Warm Ember tokens
+  // Render text and replace inline citations [1], [2] with interactive footnote tokens
   const renderGroundedAnswer = (text, citations = []) => {
     if (!text) return null;
 
@@ -388,7 +415,8 @@ export function ResearchPage() {
     return (
       lower.includes("cannot answer this question based on the provided documents") ||
       lower.includes("not enough information in the provided context") ||
-      lower.includes("no relevant documents")
+      lower.includes("no relevant documents") ||
+      lower.includes("insufficient context")
     );
   };
 
@@ -416,7 +444,7 @@ export function ResearchPage() {
               : "border-transparent text-content-secondary"
           }`}
         >
-          Research Canvas
+          Research
         </button>
         <button
           type="button"
@@ -446,9 +474,9 @@ export function ResearchPage() {
             <div className="flex items-center gap-1.5 min-w-0">
               <SlidersHorizontal className="w-3.5 h-3.5 text-accent shrink-0" />
               <span className="text-xs font-semibold text-content-primary">
-                Source Scope
+                Sources
               </span>
-              <span className="text-[10px] font-mono text-content-muted tabular-nums">
+              <span className="text-[11px] font-mono text-content-muted tabular-nums">
                 ({selectedDocIds.size}/{documents.length})
               </span>
             </div>
@@ -457,7 +485,7 @@ export function ResearchPage() {
               <button
                 type="button"
                 onClick={toggleAllDocs}
-                className="text-[11px] text-accent hover:text-accent-hover font-medium transition-colors"
+                className="text-[11px] text-accent hover:text-accent-hover font-medium transition-colors cursor-pointer"
               >
                 {selectedDocIds.size === documents.length ? "Deselect All" : "Select All"}
               </button>
@@ -467,16 +495,27 @@ export function ResearchPage() {
           {/* Documents Checklist */}
           <div className="p-2 overflow-y-auto space-y-1 border-b border-border max-h-64">
             {documents.length === 0 ? (
-              <div className="p-3 text-center">
+              <div className="p-3 text-center space-y-2.5">
                 <p className="text-[11px] text-content-muted leading-relaxed">
-                  No indexed documents ready in this workspace. Upload documents to scope research.
+                  No documents ready in this workspace. Upload files or load a sample paper to begin research.
                 </p>
-                <Link
-                  to="/workspace/documents"
-                  className="mt-2 inline-flex items-center gap-1 text-xs text-accent hover:underline font-medium"
-                >
-                  <span>Go to Documents</span>
-                </Link>
+                <div className="flex flex-col gap-1.5">
+                  <Link to="/workspace/documents">
+                    <Button size="xs" variant="primary" icon={Upload} className="w-full">
+                      Add documents
+                    </Button>
+                  </Link>
+                  <Button
+                    size="xs"
+                    variant="secondary"
+                    icon={BookOpen}
+                    loading={ingestingSample}
+                    onClick={handleIngestSample}
+                    className="w-full"
+                  >
+                    Try sample paper
+                  </Button>
+                </div>
               </div>
             ) : (
               documents.map((doc) => {
@@ -508,6 +547,7 @@ export function ResearchPage() {
                       to={`/documents/${doc.id}`}
                       className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-surface text-content-muted hover:text-content-primary transition-opacity"
                       title="Open dedicated document viewer"
+                      aria-label={`Open viewer for ${doc.filename}`}
                     >
                       <ExternalLink className="w-3 h-3" />
                     </Link>
@@ -525,7 +565,7 @@ export function ResearchPage() {
             <button
               type="button"
               onClick={startNewSession}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:text-accent-hover p-1 rounded hover:bg-surface-subtle transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] font-medium text-accent hover:text-accent-hover p-1 rounded hover:bg-surface-subtle transition-colors cursor-pointer"
               title="Start a new research session"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -549,22 +589,21 @@ export function ResearchPage() {
                     onClick={() => switchSession(s.id)}
                     className={`group w-full text-left p-2 rounded-[5px] text-xs flex items-center justify-between gap-2 cursor-pointer transition-colors ${
                       isActive
-                        ? "bg-accent text-white font-medium shadow-xs"
-                        : "text-content-secondary hover:bg-surface-subtle hover:text-content-primary"
+                        ? "bg-accent-subtle text-content-primary font-semibold border-l-2 border-accent pl-2.5"
+                        : "text-content-secondary hover:bg-surface-subtle hover:text-content-primary pl-3"
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : "text-content-muted"}`} />
+                      <MessageSquare className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-accent" : "text-content-muted"}`} />
                       <span className="truncate">{s.title || "Research Session"}</span>
                     </div>
 
                     <button
                       type="button"
                       onClick={(e) => deleteSession(s.id, e)}
-                      className={`opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-black/10 transition-opacity ${
-                        isActive ? "text-white" : "text-content-muted hover:text-semantic-error-text"
-                      }`}
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-surface text-content-muted hover:text-semantic-error-text transition-opacity cursor-pointer"
                       title="Delete session"
+                      aria-label="Delete session"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -589,8 +628,9 @@ export function ResearchPage() {
               <button
                 type="button"
                 onClick={() => setLeftPanelOpen((v) => !v)}
-                className="hidden lg:inline-flex p-1 rounded hover:bg-surface-subtle text-content-secondary transition-colors"
+                className="hidden lg:inline-flex p-1 rounded hover:bg-surface-subtle text-content-secondary transition-colors cursor-pointer"
                 title={leftPanelOpen ? "Collapse source panel" : "Expand source panel"}
+                aria-label="Toggle source panel"
               >
                 {leftPanelOpen ? (
                   <ChevronLeft className="w-4 h-4" />
@@ -610,7 +650,7 @@ export function ResearchPage() {
               <button
                 type="button"
                 onClick={() => setRightPanelOpen((v) => !v)}
-                className="hidden lg:inline-flex items-center gap-1.5 px-2 py-1 rounded hover:bg-surface-subtle text-content-secondary border border-border text-xs transition-colors"
+                className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1 rounded hover:bg-surface-subtle text-content-secondary border border-border text-xs transition-colors cursor-pointer"
                 title={rightPanelOpen ? "Hide evidence inspector" : "Show evidence inspector"}
               >
                 <BookOpen className="w-3.5 h-3.5 text-accent" />
@@ -630,24 +670,24 @@ export function ResearchPage() {
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <h2 className="text-lg font-serif font-semibold text-content-primary">
-                      Grounded Document Research Desk
+                      Ask a question about your documents
                     </h2>
                     <p className="text-xs text-content-secondary max-w-md mx-auto leading-relaxed">
-                      Ask any question synthesized strictly across your selected sources. Every answer cites exact pages and passages verified against document chunks.
+                      Select documents on the left to begin your research. Every answer cites exact pages you can verify.
                     </p>
                   </div>
 
                   {/* Dynamic Suggested Questions */}
                   <div className="pt-4 border-t border-border/60">
                     <div className="flex items-center justify-between mb-3 px-1">
-                      <span className="text-[11px] font-mono uppercase tracking-wider text-content-muted font-semibold">
-                        Suggested Inquiries from Active Scope
+                      <span className="text-xs font-semibold text-content-primary">
+                        Questions you could ask
                       </span>
                       <button
                         type="button"
                         onClick={loadSuggestedQuestions}
                         disabled={loadingSuggestions}
-                        className="inline-flex items-center gap-1 text-[11px] text-accent hover:text-accent-hover transition-colors"
+                        className="inline-flex items-center gap-1 text-[11px] text-accent hover:text-accent-hover transition-colors cursor-pointer"
                         title="Generate new suggested questions"
                       >
                         <RefreshCw className={`w-3 h-3 ${loadingSuggestions ? "animate-spin" : ""}`} />
@@ -665,7 +705,7 @@ export function ResearchPage() {
                         ))}
                       </div>
                     ) : suggestedQuestions.length > 0 ? (
-                      <div className="grid grid-cols-1 gap-2.5">
+                      <div className="grid grid-cols-1 gap-2">
                         {suggestedQuestions.map((sq, idx) => (
                           <button
                             key={idx}
@@ -701,7 +741,7 @@ export function ResearchPage() {
                       {/* Author & Timestamp */}
                       <div className="flex items-center justify-between text-[11px] font-mono text-content-muted">
                         <span className="font-semibold text-content-secondary uppercase tracking-wider">
-                          {isUser ? "Researcher Inquiry" : "Synthesized Document Response"}
+                          {isUser ? "Question" : "Response"}
                         </span>
                         <span>
                           {msg.created_at ? new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
@@ -723,7 +763,7 @@ export function ResearchPage() {
                                 <span>Insufficient Grounded Context</span>
                               </div>
                               <p className="leading-relaxed">
-                                The active documents do not contain direct evidence to answer this inquiry. Citations are withheld to prevent ungrounded extrapolation. Consider selecting additional documents in the left panel.
+                                The selected documents do not contain enough evidence to answer this question. Citations are withheld to prevent extrapolation. Try selecting additional documents on the left or phrasing your inquiry differently.
                               </p>
                             </div>
                           ) : (
@@ -767,7 +807,7 @@ export function ResearchPage() {
                               ) : (
                                 <>
                                   <Copy className="w-3.5 h-3.5" />
-                                  <span>Copy synthesis</span>
+                                  <span>Copy answer</span>
                                 </>
                               )}
                             </button>
@@ -791,7 +831,7 @@ export function ResearchPage() {
                   <div className="flex items-center justify-between text-[11px] font-mono text-content-muted">
                     <span className="font-semibold text-accent uppercase tracking-wider flex items-center gap-1.5">
                       <Loader2 className="w-3 h-3 animate-spin text-accent" />
-                      <span>Synthesizing Verified Answer...</span>
+                      <span>Synthesizing Answer...</span>
                     </span>
                   </div>
 
@@ -836,7 +876,7 @@ export function ResearchPage() {
                       handleSubmit();
                     }
                   }}
-                  placeholder="Pose a research question across your selected documents (Press Enter to submit)..."
+                  placeholder="Ask a question about the selected documents..."
                   className="w-full p-3 pr-20 text-xs sm:text-sm bg-transparent resize-none text-content-primary placeholder:text-content-muted focus:outline-none leading-relaxed font-sans"
                 />
 
@@ -878,7 +918,9 @@ export function ResearchPage() {
                 >
                   Scoped to {selectedDocIds.size} of {documents.length} document(s)
                 </button>
-                <span className="hidden sm:inline">Enter to submit, Shift+Enter for newline</span>
+                <span className="hidden sm:inline">
+                  Press Enter to send, Shift+Enter for newline
+                </span>
               </div>
             </form>
           </div>
@@ -902,7 +944,7 @@ export function ResearchPage() {
               <button
                 type="button"
                 onClick={() => setRightTab("passages")}
-                className={`px-2.5 py-1 rounded-[4px] text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-[4px] text-xs font-medium transition-colors cursor-pointer ${
                   rightTab === "passages"
                     ? "bg-surface text-content-primary shadow-xs border border-border"
                     : "text-content-secondary hover:text-content-primary"
@@ -913,7 +955,7 @@ export function ResearchPage() {
               <button
                 type="button"
                 onClick={() => setRightTab("document")}
-                className={`px-2.5 py-1 rounded-[4px] text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-[4px] text-xs font-medium transition-colors cursor-pointer ${
                   rightTab === "document"
                     ? "bg-surface text-content-primary shadow-xs border border-border"
                     : "text-content-secondary hover:text-content-primary"
@@ -926,8 +968,9 @@ export function ResearchPage() {
             <button
               type="button"
               onClick={() => setRightPanelOpen(false)}
-              className="p-1 rounded hover:bg-surface text-content-muted hover:text-content-primary transition-colors"
+              className="p-1 rounded hover:bg-surface text-content-muted hover:text-content-primary transition-colors cursor-pointer"
               title="Close evidence inspector"
+              aria-label="Close evidence inspector"
             >
               <X className="w-4 h-4" />
             </button>
@@ -940,7 +983,7 @@ export function ResearchPage() {
                 <BookOpen className="w-8 h-8 mb-2 opacity-40 text-accent" />
                 <h4 className="text-xs font-semibold text-content-primary">No Citations Active</h4>
                 <p className="text-[11px] mt-1 text-content-secondary max-w-xs leading-relaxed">
-                  When you submit a research question, verified source passages extracted from your documents will appear here.
+                  Click any citation marker in an answer to inspect its original passage and page in the reader.
                 </p>
               </div>
             ) : rightTab === "passages" ? (

@@ -108,8 +108,8 @@ export function DesignSystemPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-4 rounded-[6px] border border-border bg-surface flex items-center justify-between">
             <div>
-              <div className="text-xs font-semibold text-content-primary">Original Vector Mark</div>
-              <div className="text-[11px] text-content-muted">Folded document corner + citation bracket</div>
+              <div className="text-xs font-semibold text-content-primary">Geometric Vector Mark</div>
+              <div className="text-[11px] text-content-muted">Layered corpus planes + grounded citation aperture</div>
             </div>
             <div className="p-2 rounded bg-surface-subtle text-accent border border-border">
               <BrandMark size={28} />

@@ -11,43 +11,59 @@ export function BrandMark({ size = 20, className = "" }) {
       className={`shrink-0 ${className}`}
       aria-hidden="true"
     >
-      {/* Document boundary with folded top-right corner */}
+      {/* Underlying Indexed Corpus Layer (Offset Document Plane) */}
+      <rect
+        x="6.5"
+        y="2.5"
+        width="13"
+        height="15"
+        rx="2"
+        className="stroke-current opacity-40"
+        strokeWidth="1.6"
+      />
+      {/* Active Foreground Document Plane */}
+      <rect
+        x="3.5"
+        y="5.5"
+        width="13"
+        height="15"
+        rx="2"
+        className="stroke-current"
+        strokeWidth="1.6"
+        fill="var(--dm-bg-surface, #FFFFFF)"
+      />
+      {/* Precision Grounded Citation Marker Token in Warm Ember */}
       <path
-        d="M4 4.5C4 3.67 4.67 3 5.5 3H14L20 9V20.5C20 21.33 19.33 22 18.5 22H5.5C4.67 22 4 21.33 4 20.5V4.5Z"
+        d="M7 11.5H6V14.5H7"
+        stroke="var(--dm-citation-text, #9C381E)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M13 11.5H14V14.5H13"
+        stroke="var(--dm-citation-text, #9C381E)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Verified Passage Lens / Focal Dot */}
+      <circle
+        cx="10"
+        cy="13"
+        r="1.25"
+        fill="var(--dm-citation-text, #9C381E)"
+      />
+      {/* Upper Subtle Document Header Line */}
+      <line
+        x1="7"
+        y1="9"
+        x2="13"
+        y2="9"
         stroke="currentColor"
-        strokeWidth="1.75"
+        strokeWidth="1.2"
         strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Folded paper crease */}
-      <path
-        d="M14 3V9H20"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Grounded Citation Marker Token in Warm Ember */}
-      <path
-        d="M8.5 13H7.5V17H8.5"
-        stroke="var(--dm-citation-text, #9C381E)"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15.5 13H16.5V17H15.5"
-        stroke="var(--dm-citation-text, #9C381E)"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {/* Verifiable evidence text passage between brackets */}
-      <path
-        d="M10 15H14"
-        stroke="var(--dm-citation-text, #9C381E)"
-        strokeWidth="1.75"
-        strokeLinecap="round"
+        className="opacity-35"
       />
     </svg>
   );
@@ -59,15 +75,14 @@ export function BrandWordmark({ size = 20, className = "" }) {
       <div className="text-accent flex items-center justify-center">
         <BrandMark size={size} />
       </div>
-      <div className="flex items-baseline gap-1">
-        <span className="font-bold text-sm tracking-tight text-content-primary">
+      <div className="flex items-baseline gap-1.5">
+        <span className="font-semibold text-sm tracking-tight text-content-primary">
           DocuMind
         </span>
-        <span className="text-[10px] font-semibold tracking-wider uppercase text-accent px-1 py-0.5 rounded bg-accent-subtle/50">
+        <span className="text-[10px] font-semibold tracking-wider uppercase text-accent px-1 py-0.2 rounded-[3px] bg-accent-subtle border border-accent/20">
           AI
         </span>
       </div>
     </div>
   );
 }
-

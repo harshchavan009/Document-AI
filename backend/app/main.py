@@ -170,7 +170,7 @@ if os.path.exists(frontend_dist):
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="static-assets")
 
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     async def serve_spa(full_path: str):
         if full_path.startswith("api"):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API endpoint not found")
@@ -178,7 +178,14 @@ if os.path.exists(frontend_dist):
         if full_path and os.path.isfile(target_file):
             return FileResponse(target_file)
         index_file = os.path.join(frontend_dist, "index.html")
-        return FileResponse(index_file)
+        return FileResponse(
+            index_file,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
 else:
     @app.get("/")
     def root():

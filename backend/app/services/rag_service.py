@@ -30,7 +30,7 @@ class RAGService:
         """
         Parses all [X] citation markers in the answer and validates that
         every cited index genuinely exists in the retrieved sources set.
-        Guarantees zero fabricated citations reach the user.
+        Verifies that all returned citations match retrieved chunks.
         """
         if not generated_answer or not retrieved_sources:
             return []

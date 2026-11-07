@@ -18,6 +18,8 @@ from backend.app.utils.security import (
     SESSION_COOKIE_NAME,
     generate_session_token
 )
+from slowapi.errors import RateLimitExceeded
+from backend.app.utils.limiter import limiter
 
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
@@ -55,11 +57,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "detail": "Rate limit exceeded. Please wait a moment before sending more requests."
+        }
+    )
+
 
 @app.middleware("http")
 async def security_and_session_middleware(request: Request, call_next):
     """
-    Enforces security headers and guarantees a cryptographic visitor session token.
+    Enforces security headers and assigns a cryptographic visitor session token.
     All workspace and document lookups are scoped by this identity.
     """
     request_id = str(uuid.uuid4())[:8]

@@ -16,6 +16,7 @@ def get_public_config():
         allowed_mime_types=settings.ALLOWED_MIME_TYPES,
         max_file_size_bytes=settings.max_file_size_bytes,
         max_file_size_mb=settings.MAX_FILE_SIZE_MB,
+        max_pdf_pages=settings.MAX_PDF_PAGES,
         default_chunk_size=settings.DEFAULT_CHUNK_SIZE,
         default_chunk_overlap=settings.DEFAULT_CHUNK_OVERLAP,
         default_top_k=settings.DEFAULT_TOP_K,

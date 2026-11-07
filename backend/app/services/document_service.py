@@ -63,6 +63,28 @@ class DocumentService:
                 rejected.append({"filename": safe_name, "reason": magic_err})
                 continue
 
+            # Upfront PDF page count limit check
+            ext = os.path.splitext(safe_name)[1].lower()
+            if ext == ".pdf":
+                try:
+                    import pymupdf as fitz
+                except ImportError:
+                    try:
+                        import fitz
+                    except ImportError:
+                        fitz = None
+                if fitz:
+                    try:
+                        with fitz.open(stream=file_bytes, filetype="pdf") as pdf_doc:
+                            if len(pdf_doc) > settings.MAX_PDF_PAGES:
+                                rejected.append({
+                                    "filename": safe_name,
+                                    "reason": f"PDF exceeds maximum limit of {settings.MAX_PDF_PAGES} pages ({len(pdf_doc)} pages found)."
+                                })
+                                continue
+                    except Exception:
+                        pass
+
             # SHA-256 duplicate detection
             file_hash = compute_sha256(file_bytes)
             duplicate = (

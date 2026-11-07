@@ -1,5 +1,6 @@
 import os
 from typing import List, Dict, Any
+from backend.app.config import settings
 
 
 class ExtractionError(Exception):
@@ -39,6 +40,11 @@ class ExtractionService:
             page_count = len(doc)
             if page_count == 0:
                 raise ExtractionError("PDF document has 0 pages.")
+
+            if page_count > settings.MAX_PDF_PAGES:
+                raise ExtractionError(
+                    f"PDF document exceeds the maximum limit of {settings.MAX_PDF_PAGES} pages (contains {page_count} pages)."
+                )
 
             extracted_pages = []
             total_text_length = 0

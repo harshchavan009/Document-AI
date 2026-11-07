@@ -229,7 +229,7 @@ export function LandingPage() {
               <div className="p-2.5 rounded-[5px] bg-surface border border-citation-border shadow-xs space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-bold font-mono text-citation-text">[1] Page 1</span>
-                  <span className="text-[10px] font-mono text-semantic-success-text">88% match</span>
+                  <span className="text-[10px] font-mono text-semantic-success-text">Grounded</span>
                 </div>
                 <p className="font-reading text-[11px] italic text-content-primary line-clamp-2">
                   "We propose the Transformer, a model architecture eschewing recurrence and entirely relying on an attention mechanism."
@@ -240,7 +240,7 @@ export function LandingPage() {
               <div className="p-2.5 rounded-[5px] bg-surface border border-citation-border shadow-xs space-y-1">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-bold font-mono text-citation-text">[2] Page 2</span>
-                  <span className="text-[10px] font-mono text-semantic-success-text">82% match</span>
+                  <span className="text-[10px] font-mono text-semantic-success-text">Grounded</span>
                 </div>
                 <p className="font-reading text-[11px] italic text-content-primary line-clamp-2">
                   "Experiments show these models to be superior in quality while being more parallelizable and requiring less training time."

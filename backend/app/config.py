@@ -44,8 +44,15 @@ class Settings(BaseSettings):
     DEFAULT_CHUNK_SIZE: int = 600
     DEFAULT_CHUNK_OVERLAP: int = 100
     MAX_FILE_SIZE_MB: int = 20
+    MAX_PDF_PAGES: int = 50
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".txt"]
     ALLOWED_MIME_TYPES: List[str] = ["application/pdf", "text/plain"]
+
+    # Abuse and Cost Protection Rate Limits
+    RATE_LIMIT_ENABLED: bool = True
+    UPLOAD_RATE_LIMIT: str = "20/minute"
+    SAMPLE_RATE_LIMIT: str = "10/minute"
+    QUERY_RATE_LIMIT: str = "30/minute"
 
     # Retrieval and AI Generation
     DEFAULT_TOP_K: int = 5

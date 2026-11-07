@@ -232,7 +232,7 @@ export function HomePage() {
             <input
               type="file"
               multiple
-              accept=".pdf,.txt"
+              accept={config?.allowed_extensions?.join(",") || ".pdf,.txt"}
               onChange={handleFileInput}
               className="hidden"
             />

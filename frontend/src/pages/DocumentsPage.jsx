@@ -33,6 +33,7 @@ export function DocumentsPage() {
   const navigate = useNavigate();
 
   const [documents, setDocuments] = useState([]);
+  const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
@@ -71,6 +72,10 @@ export function DocumentsPage() {
     setLoading(true);
     fetchDocs();
   }, [fetchDocs]);
+
+  useEffect(() => {
+    api.getConfig().then(setConfig).catch(() => {});
+  }, []);
 
   // Real-time polling for in-progress documents
   useEffect(() => {
@@ -379,7 +384,7 @@ export function DocumentsPage() {
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".pdf,.txt"
+            accept={config?.allowed_extensions?.join(",") || ".pdf,.txt"}
             onChange={(e) => handleUploadFiles(Array.from(e.target.files || []))}
             className="hidden"
           />

@@ -9,6 +9,7 @@ class ConfigResponse(BaseModel):
     allowed_mime_types: List[str]
     max_file_size_bytes: int
     max_file_size_mb: int
+    max_pdf_pages: int
     default_chunk_size: int
     default_chunk_overlap: int
     default_top_k: int

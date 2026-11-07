@@ -1,7 +1,7 @@
 import json
 import logging
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from backend.app.database import get_db, SessionLocal
@@ -25,6 +25,12 @@ from backend.app.schemas import (
     SuggestedQuestionsResponse
 )
 from backend.app.config import settings
+from backend.app.utils.limiter import limiter
+from backend.app.utils.security import (
+    get_or_create_session_id,
+    verify_workspace_access,
+    verify_chat_session_access
+)
 from backend.app.services.rag_service import RAGService
 
 router = APIRouter(prefix="/chat", tags=["Chat & RAG"])
@@ -32,22 +38,36 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/query", response_model=QueryResponse)
-def query_rag(payload: QueryRequest, db: Session = Depends(get_db)):
+@limiter.limit(settings.QUERY_RATE_LIMIT)
+def query_rag(
+    request: Request,
+    payload: QueryRequest,
+    db: Session = Depends(get_db)
+):
     """
     Executes grounded RAG research query.
     Embeds question, performs scoped vector search, builds evidence-grounded prompt,
     generates answer via Gemini, and validates all citations server-side.
     """
-    workspace = db.query(Workspace).filter(Workspace.id == payload.workspace_id).first()
-    if not workspace:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workspace not found"
-        )
+    session_id = get_or_create_session_id(request)
+    workspace = verify_workspace_access(payload.workspace_id, session_id, db)
 
     # Resolve or create conversation session
     chat_session = None
     if payload.session_id:
+        chat_session = (
+            db.query(ChatSession)
+            .filter(
+                ChatSession.id == payload.session_id,
+                ChatSession.workspace_id == workspace.id
+            )
+            .first()
+        )
+        if not chat_session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Chat session not found"
+            )
         chat_session = db.query(ChatSession).filter(ChatSession.id == payload.session_id).first()
 
     if not chat_session:
@@ -149,21 +169,34 @@ def query_rag(payload: QueryRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/query/stream")
-def query_rag_stream(payload: QueryRequest, db: Session = Depends(get_db)):
+@limiter.limit(settings.QUERY_RATE_LIMIT)
+def query_rag_stream(
+    request: Request,
+    payload: QueryRequest,
+    db: Session = Depends(get_db)
+):
     """
     Streams RAG response tokens via Server-Sent Events (SSE).
     Dispatches query_rewritten, context_retrieved, text_delta, sources_verified, and done events.
     """
-    workspace = db.query(Workspace).filter(Workspace.id == payload.workspace_id).first()
-    if not workspace:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workspace not found"
-        )
+    session_id = get_or_create_session_id(request)
+    workspace = verify_workspace_access(payload.workspace_id, session_id, db)
 
     chat_session = None
     if payload.session_id:
-        chat_session = db.query(ChatSession).filter(ChatSession.id == payload.session_id).first()
+        chat_session = (
+            db.query(ChatSession)
+            .filter(
+                ChatSession.id == payload.session_id,
+                ChatSession.workspace_id == workspace.id
+            )
+            .first()
+        )
+        if not chat_session:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Chat session not found"
+            )
 
     if not chat_session:
         clean_title = payload.question.strip()[:60]
@@ -266,11 +299,17 @@ def query_rag_stream(payload: QueryRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/sessions", response_model=List[ChatSessionResponse])
-def list_chat_sessions(workspace_id: str, db: Session = Depends(get_db)):
+def list_chat_sessions(
+    request: Request,
+    workspace_id: str,
+    db: Session = Depends(get_db)
+):
     """Retrieves all chat sessions in the workspace ordered by recent activity."""
+    session_id = get_or_create_session_id(request)
+    workspace = verify_workspace_access(workspace_id, session_id, db)
     sessions = (
         db.query(ChatSession)
-        .filter(ChatSession.workspace_id == workspace_id)
+        .filter(ChatSession.workspace_id == workspace.id)
         .order_by(ChatSession.updated_at.desc())
         .all()
     )
@@ -278,14 +317,14 @@ def list_chat_sessions(workspace_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionDetailResponse)
-def get_chat_session(session_id: str, db: Session = Depends(get_db)):
+def get_chat_session(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     """Retrieves complete conversation thread including verified citations."""
-    session_obj = db.query(ChatSession).filter(ChatSession.id == session_id).first()
-    if not session_obj:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chat session not found"
-        )
+    visitor_session_id = get_or_create_session_id(request)
+    session_obj = verify_chat_session_access(session_id, visitor_session_id, db)
 
     messages = (
         db.query(ChatMessage)
@@ -332,14 +371,14 @@ def get_chat_session(session_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/sessions/{session_id}")
-def delete_chat_session(session_id: str, db: Session = Depends(get_db)):
+def delete_chat_session(
+    session_id: str,
+    request: Request,
+    db: Session = Depends(get_db)
+):
     """Deletes a research conversation thread and all its citations."""
-    session_obj = db.query(ChatSession).filter(ChatSession.id == session_id).first()
-    if not session_obj:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chat session not found"
-        )
+    visitor_session_id = get_or_create_session_id(request)
+    session_obj = verify_chat_session_access(session_id, visitor_session_id, db)
 
     db.delete(session_obj)
     db.commit()
@@ -349,16 +388,17 @@ def delete_chat_session(session_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/suggested-questions", response_model=SuggestedQuestionsResponse)
-def get_suggested_questions(payload: SuggestedQuestionsRequest, db: Session = Depends(get_db)):
+@limiter.limit("15/minute")
+def get_suggested_questions(
+    request: Request,
+    payload: SuggestedQuestionsRequest,
+    db: Session = Depends(get_db)
+):
     """
     Generates 3 contextual, grounded research questions based on the active documents.
     """
-    workspace = db.query(Workspace).filter(Workspace.id == payload.workspace_id).first()
-    if not workspace:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Workspace not found"
-        )
+    session_id = get_or_create_session_id(request)
+    workspace = verify_workspace_access(payload.workspace_id, session_id, db)
 
     doc_query = db.query(Document).filter(
         Document.workspace_id == payload.workspace_id,

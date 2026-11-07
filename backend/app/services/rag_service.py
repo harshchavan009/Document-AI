@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Tuple, Generator
 from backend.app.config import settings
 from backend.app.services.retrieval_service import RetrievalService
 from backend.app.prompts.rag_prompts import RAG_SYSTEM_PROMPT, format_context_block
+from backend.app.utils.circuit_breaker import gemini_circuit_breaker, CircuitBreakerOpenException
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,9 @@ class RAGService:
         """
         Executes complete RAG pipeline synchronously (or non-streamed).
         """
+        # Circuit breaker pre-check before any outbound embedding or generation calls
+        gemini_circuit_breaker.check_can_execute()
+
         # Step 1: Follow-up query rewriting if history exists
         standalone_query = question
         if history and len(history) > 0:
@@ -116,7 +120,8 @@ class RAGService:
             f"Answer:"
         )
 
-        # Step 5: Call Gemini Generation Model
+        # Step 5: Call Gemini Generation Model (protected by circuit breaker)
+        gemini_circuit_breaker.check_can_execute()
         client = self.retrieval_service.embedding_service.get_client()
         from google.genai import types
 
@@ -130,7 +135,9 @@ class RAGService:
                 )
             )
             raw_answer = response.text.strip()
+            gemini_circuit_breaker.record_success()
         except Exception as e:
+            gemini_circuit_breaker.record_failure(e)
             logger.error(f"Gemini generation call failed: {e}")
             raise RuntimeError(f"AI generation failed: {str(e)}")
 
@@ -156,6 +163,17 @@ class RAGService:
         """
         Yields Server-Sent Events containing progress, text deltas, and verified citations.
         """
+        # Circuit breaker pre-check before any outbound embedding or generation calls
+        try:
+            gemini_circuit_breaker.check_can_execute()
+        except CircuitBreakerOpenException as cbe:
+            yield {
+                "event": "error",
+                "data": {"message": cbe.message, "retry_after": cbe.retry_after}
+            }
+            yield {"event": "done", "data": {}}
+            return
+
         # Step 1: Query rewriting
         standalone_query = question
         if history and len(history) > 0:
@@ -225,7 +243,9 @@ class RAGService:
                         "event": "text_delta",
                         "data": {"delta": chunk.text}
                     }
+            gemini_circuit_breaker.record_success()
         except Exception as e:
+            gemini_circuit_breaker.record_failure(e)
             logger.error(f"Streaming generation failed: {e}")
             yield {
                 "event": "error",

@@ -1,8 +1,9 @@
+import os
 import time
 import uuid
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, Response, status
+from fastapi import FastAPI, Request, Response, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.config import settings
@@ -20,6 +21,7 @@ from backend.app.utils.security import (
 )
 from slowapi.errors import RateLimitExceeded
 from backend.app.utils.limiter import limiter
+from backend.app.services.job_service import JobService
 
 logging.basicConfig(
     level=logging.INFO if not settings.DEBUG else logging.DEBUG,
@@ -30,10 +32,16 @@ logger = logging.getLogger("documind")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initializes database schema and storage directories on startup."""
+    """Initializes database schema, storage directories, and recovers orphan jobs on startup."""
     logger.info("Initializing DocuMind AI database tables...")
     Base.metadata.create_all(bind=engine)
     logger.info("Database initialized successfully.")
+
+    # Recover any ingestion jobs interrupted by previous server restart
+    recovered_count = JobService.recover_orphan_jobs()
+    if recovered_count > 0:
+        logger.info(f"Startup recovery: reset {recovered_count} interrupted jobs to Failed state.")
+
     yield
     logger.info("DocuMind AI application shutting down cleanly.")
 
@@ -139,12 +147,34 @@ app.include_router(documents.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 
 
-@app.get("/")
-def root():
-    return {
-        "name": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "status": "online",
-        "docs": "/api/docs"
-    }
+frontend_dist = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+)
+
+if os.path.exists(frontend_dist):
+    from fastapi.staticfiles import StaticFiles
+    from starlette.responses import FileResponse
+
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="static-assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API endpoint not found")
+        target_file = os.path.join(frontend_dist, full_path)
+        if full_path and os.path.isfile(target_file):
+            return FileResponse(target_file)
+        index_file = os.path.join(frontend_dist, "index.html")
+        return FileResponse(index_file)
+else:
+    @app.get("/")
+    def root():
+        return {
+            "name": settings.APP_NAME,
+            "version": settings.APP_VERSION,
+            "status": "online",
+            "docs": "/api/docs"
+        }
 

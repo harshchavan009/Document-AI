@@ -142,3 +142,36 @@ class JobService:
         finally:
             db.close()
 
+    @staticmethod
+    def recover_orphan_jobs(db: Session = None) -> int:
+        """
+        Recovers document ingestion jobs that were interrupted in intermediate states
+        by a server restart or deployment crash. Resets them to Failed with a helpful message.
+        """
+        close_session = False
+        if db is None:
+            db = SessionLocal()
+            close_session = True
+
+        try:
+            interrupted = (
+                db.query(Document)
+                .filter(Document.status.in_(["Uploaded", "Extracting", "Chunking", "Embedding", "Indexing"]))
+                .all()
+            )
+            count = len(interrupted)
+            if count > 0:
+                logger.warning(f"Found {count} interrupted document ingestion jobs. Recovering state...")
+                for doc in interrupted:
+                    doc.status = "Failed"
+                    doc.error_message = "Ingestion interrupted by server restart. Click Retry to reprocess."
+                db.commit()
+                logger.info(f"Successfully recovered {count} orphan jobs.")
+            return count
+        except Exception as e:
+            logger.error(f"Error during orphan job recovery: {e}")
+            return 0
+        finally:
+            if close_session:
+                db.close()
+

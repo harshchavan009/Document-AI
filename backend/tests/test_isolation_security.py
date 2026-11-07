@@ -211,3 +211,4 @@ def test_max_pdf_page_limit_enforcement(client, sample_workspace, generate_sampl
     assert len(data["uploaded"]) == 0
     assert len(data["rejected"]) == 1
     assert "50 pages" in data["rejected"][0]["reason"]
+

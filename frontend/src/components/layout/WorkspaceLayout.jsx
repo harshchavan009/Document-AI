@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { ConnectionBanner } from "../ui/ConnectionBanner";
 import { api } from "../../api/client";
 
 export function WorkspaceLayout() {
@@ -43,6 +44,7 @@ export function WorkspaceLayout() {
         onCloseMobile={() => setMobileMenuOpen(false)}
       />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        <ConnectionBanner />
         {/* Only shown if service is actually degraded */}
         {degradedStatus && (
           <div className="p-2 bg-semantic-warning-bg border-b border-semantic-warning-border text-semantic-warning-text text-xs flex items-center justify-center gap-2 font-medium shrink-0">

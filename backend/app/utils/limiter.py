@@ -24,3 +24,4 @@ limiter = Limiter(
     enabled=settings.RATE_LIMIT_ENABLED,
     storage_uri="memory://"
 )
+

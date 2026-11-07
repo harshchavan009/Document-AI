@@ -8,6 +8,7 @@ export function WorkspaceProvider({ children }) {
   const [activeWorkspace, setActiveWorkspace] = useState(null);
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isServerWarming, setIsServerWarming] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchConfig = useCallback(async () => {
@@ -20,10 +21,16 @@ export function WorkspaceProvider({ children }) {
   }, []);
 
   const fetchWorkspaces = useCallback(async () => {
+    const warmingTimer = setTimeout(() => {
+      setIsServerWarming(true);
+    }, 2500);
+
     try {
       setLoading(true);
       setError(null);
       const res = await api.getWorkspaces();
+      clearTimeout(warmingTimer);
+      setIsServerWarming(false);
       const list = res.workspaces || [];
       setWorkspaces(list);
 
@@ -38,6 +45,8 @@ export function WorkspaceProvider({ children }) {
         setActiveWorkspace(null);
       }
     } catch (err) {
+      clearTimeout(warmingTimer);
+      setIsServerWarming(false);
       setError(err.message || "Failed to load workspaces");
     } finally {
       setLoading(false);
@@ -70,8 +79,10 @@ export function WorkspaceProvider({ children }) {
         switchWorkspace,
         createNewWorkspace,
         refreshWorkspaces: fetchWorkspaces,
+        retryConnection: fetchWorkspaces,
         config,
         loading,
+        isServerWarming,
         error,
       }}
     >

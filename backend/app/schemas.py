@@ -26,6 +26,16 @@ class HealthResponse(BaseModel):
     timestamp: datetime
 
 
+class ReadinessResponse(BaseModel):
+    ready: bool
+    version: str
+    database: str
+    vector_store: str
+    storage_free_mb: int
+    gemini_configured: bool
+    timestamp: datetime
+
+
 # Workspace Schemas
 class WorkspaceCreate(BaseModel):
     name: str = Field(min_length=1, max_length=128)

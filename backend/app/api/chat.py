@@ -31,6 +31,7 @@ from backend.app.utils.security import (
     verify_workspace_access,
     verify_chat_session_access
 )
+from backend.app.utils.circuit_breaker import CircuitBreakerOpenException
 from backend.app.services.rag_service import RAGService
 
 router = APIRouter(prefix="/chat", tags=["Chat & RAG"])
@@ -109,6 +110,13 @@ def query_rag(
             history=history,
             top_k=payload.top_k or 5,
             relevance_threshold=payload.relevance_threshold
+        )
+    except CircuitBreakerOpenException as cbe:
+        logger.warning(f"RAG query blocked by circuit breaker: {cbe}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=cbe.message,
+            headers={"Retry-After": str(cbe.retry_after)}
         )
     except Exception as e:
         logger.error(f"RAG query execution error: {e}")

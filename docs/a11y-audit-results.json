@@ -1,0 +1,62 @@
+[
+  {
+    "route": "/",
+    "passes": 20,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/workspace",
+    "passes": 16,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/workspace/documents",
+    "passes": 18,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/workspace/research",
+    "passes": 18,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/workspace/settings",
+    "passes": 17,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/system",
+    "passes": 17,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/docs",
+    "passes": 21,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/privacy",
+    "passes": 18,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/terms",
+    "passes": 16,
+    "violationsCount": 0,
+    "violations": []
+  },
+  {
+    "route": "/design-system",
+    "passes": 17,
+    "violationsCount": 0,
+    "violations": []
+  }
+]

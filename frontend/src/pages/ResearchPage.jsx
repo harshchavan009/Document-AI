@@ -36,6 +36,7 @@ export function ResearchPage() {
   const { activeWorkspace } = useWorkspace();
   const [searchParams] = useSearchParams();
   const queryDocId = searchParams.get("docId");
+  const initialQuery = searchParams.get("q") || "";
 
   usePageMeta("Research Assistant", "Ask questions and inspect grounded citations across indexed documents.");
 
@@ -47,7 +48,7 @@ export function ResearchPage() {
   const [sessions, setSessions] = useState([]);
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(initialQuery);
 
   // Streaming and active generation
   const [streaming, setStreaming] = useState(false);

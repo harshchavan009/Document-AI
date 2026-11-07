@@ -14,16 +14,22 @@ import {
   Cpu,
   Database,
   ExternalLink,
-  SlidersHorizontal,
+  ChevronDown,
   Quote,
   Sun,
   Moon,
+  Clock,
+  Trash2,
+  Download,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { BrandWordmark, BrandMark } from "../components/ui/BrandMark";
 import { useTheme } from "../context/ThemeContext";
 import { api } from "../api/client";
 import { usePageMeta } from "../hooks/usePageMeta";
+import { LandingTryWidget } from "../components/landing/LandingTryWidget";
+import { FeedbackModal } from "../components/ui/FeedbackModal";
 
 function GitHubIcon({ className = "w-4 h-4" }) {
   return (
@@ -43,18 +49,21 @@ export function LandingPage() {
     "DocuMind AI: Grounded Document Intelligence",
     "DocuMind AI is an intelligent document research platform providing verified answers grounded in PDF and text documents with page-level citations."
   );
+
   const [config, setConfig] = useState(null);
-  const [health, setHealth] = useState(null);
+  const [ready, setReady] = useState(null);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [cfg, hlth] = await Promise.all([
+        const [cfg, rdy] = await Promise.all([
           api.getConfig().catch(() => null),
-          api.getHealth().catch(() => null),
+          api.getReady().catch(() => null),
         ]);
         if (cfg) setConfig(cfg);
-        if (hlth) setHealth(hlth);
+        if (rdy) setReady(rdy);
       } catch (err) {
         console.error("Failed to load landing data:", err);
       }
@@ -62,29 +71,52 @@ export function LandingPage() {
     loadData();
   }, []);
 
+  const toggleFaq = (index) => {
+    setOpenFaq(openFaq === index ? null : index);
+  };
+
+  const faqItems = [
+    {
+      q: "How does server-side citation verification work?",
+      a: "When the AI generates an answer, it emits bracketed numbers like [1] or [2]. Before the response is finalized or shown to you, DocuMind checks every citation token against the text chunks retrieved from your active documents. If a citation points to a chunk that was not retrieved or does not exist, the server automatically strips the bracketed token so you never see fabricated references.",
+    },
+    {
+      q: "Are my documents kept permanently?",
+      a: "No. Your documents and vector indices are stored in a private visitor session and automatically purged after 7 days of inactivity. You can also export everything as a zip archive or click Delete all my data in Settings at any time to remove your files immediately.",
+    },
+    {
+      q: "Can I upload scanned documents without text?",
+      a: "DocuMind currently indexes digital PDF files and plain text documents with extractable text layers. Pure image scans without an embedded OCR text layer cannot be indexed yet, and the uploader will reject them honestly.",
+    },
+    {
+      q: "Who processes my document text?",
+      a: "Your text chunks and questions are sent securely to the Google Gemini API solely for computing vector embeddings and generating grounded answers. Google does not use your uploaded text to train public AI models.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-canvas text-content-primary flex flex-col">
       {/* Top Navigation */}
-      <header className="h-14 border-b border-border bg-surface/90 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-8 flex items-center justify-between">
+      <header className="h-14 border-b border-border bg-surface/95 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-8 flex items-center justify-between">
         <Link to="/" className="flex items-center" title="DocuMind AI Home">
           <BrandWordmark size={19} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-content-secondary">
-          <a href="#preview" className="hover:text-content-primary transition-colors">
-            Research Desk
+          <a href="#how-it-works" className="hover:text-content-primary transition-colors">
+            How it works
           </a>
-          <a href="#pipeline" className="hover:text-content-primary transition-colors">
-            Pipeline Architecture
+          <a href="#verify" className="hover:text-content-primary transition-colors">
+            Citations
           </a>
-          <a href="#comparison" className="hover:text-content-primary transition-colors">
-            Comparison Matrix
+          <a href="#capabilities" className="hover:text-content-primary transition-colors">
+            Capabilities & Limits
+          </a>
+          <a href="#privacy-overview" className="hover:text-content-primary transition-colors">
+            Privacy & Retention
           </a>
           <Link to="/docs" className="hover:text-content-primary transition-colors">
             Documentation
-          </Link>
-          <Link to="/settings" className="hover:text-content-primary transition-colors">
-            Settings
           </Link>
         </nav>
 
@@ -95,6 +127,7 @@ export function LandingPage() {
             rel="noopener noreferrer"
             className="p-1.5 rounded hover:bg-surface-subtle text-content-secondary hover:text-content-primary transition-colors hidden sm:inline-flex"
             title="GitHub Repository"
+            aria-label="GitHub Repository"
           >
             <GitHubIcon className="w-4 h-4" />
           </a>
@@ -110,347 +143,406 @@ export function LandingPage() {
           </button>
 
           <Link to="/workspace">
-            <Button size="sm">Open Workspace</Button>
+            <Button size="sm">Open workspace</Button>
           </Link>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-14 pb-12 sm:pt-20 sm:pb-16 px-4 sm:px-8 max-w-5xl mx-auto text-center">
-        {/* Real Live Health Status Pill */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[5px] border border-border bg-surface text-content-secondary text-xs font-mono mb-6 shadow-xs">
-          <span className={`w-2 h-2 rounded-full ${health?.status === "healthy" ? "bg-semantic-success-text" : "bg-semantic-warning-text"}`} />
-          <span>
-            {health?.status === "healthy"
-              ? "System Online: Verified RAG Active"
-              : "Connecting to Local RAG Engine"}
-          </span>
-        </div>
+      {/* Hero Section: Two-Column Editorial Layout */}
+      <section className="pt-12 pb-16 sm:pt-20 sm:pb-24 px-4 sm:px-8 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          {/* Left Column: Outcome Headline & Actions */}
+          <div className="lg:col-span-6 space-y-6 text-left">
+            <div className="space-y-4">
+              <h1 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-content-primary leading-[1.14]">
+                Ask your documents.
+                <br />
+                <span className="text-accent">See the page that answers.</span>
+              </h1>
 
-        <h1 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-content-primary leading-[1.18] mb-6 max-w-4xl mx-auto">
-          Verifiable Document Research Desk
-        </h1>
-
-        <p className="text-sm sm:text-base text-content-secondary max-w-2xl mx-auto leading-relaxed mb-8 font-sans">
-          Ground research strictly across your uploaded PDF and text documents. Every assertion cites exact pages and passages verified server-side against stored chunks, stripping hallucinated references before they reach your screen.
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-14">
-          <Link to="/workspace">
-            <Button size="lg" icon={ArrowRight}>
-              Open Research Workspace
-            </Button>
-          </Link>
-          <Link to="/docs">
-            <Button size="lg" variant="secondary" icon={BookOpen}>
-              System Documentation
-            </Button>
-          </Link>
-        </div>
-
-        {/* ========================================================= */}
-        {/* Authentic Product Preview (Zero Fiction, Real Paper Data) */}
-        {/* ========================================================= */}
-        <div
-          id="preview"
-          className="rounded-[8px] border border-border bg-surface shadow-md p-3 sm:p-5 text-left text-xs max-w-4xl mx-auto overflow-hidden"
-        >
-          {/* Desk Preview Toolbar */}
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-border">
-            <div className="flex items-center gap-2 min-w-0">
-              <BrandMark size={16} className="text-accent" />
-              <span className="font-semibold text-content-primary truncate text-xs">
-                DocuMind Research Desk: Grounded Session Snapshot
-              </span>
+              <p className="text-sm sm:text-base text-content-secondary leading-relaxed max-w-xl font-sans">
+                Upload your research papers and PDFs. Get clear answers backed by exact paragraph citations you can click and verify on the original page.
+              </p>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-content-muted">
-              <span className="hidden sm:inline">Server-side chunk verification</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-semantic-success-text" />
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <Link to="/workspace">
+                <Button size="lg" icon={ArrowRight}>
+                  Open workspace
+                </Button>
+              </Link>
+              <Link to="/docs">
+                <Button size="lg" variant="secondary" icon={BookOpen}>
+                  Documentation
+                </Button>
+              </Link>
+            </div>
+
+            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-content-muted">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
+                Page-level citations
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
+                7-day private retention
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-accent" />
+                No registration required
+              </span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            {/* Left Column: Real Document Scoped */}
-            <div className="md:col-span-3 border border-border bg-surface-subtle p-3 rounded-[5px] space-y-2.5">
-              <div className="text-[10px] font-mono uppercase tracking-wider text-content-muted font-semibold">
-                Active Source Scope
-              </div>
-              <div className="p-2.5 rounded-[5px] bg-surface border border-accent-subtle/80 text-xs space-y-1">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <FileText className="w-3.5 h-3.5 text-accent shrink-0" />
-                  <span className="font-semibold text-content-primary truncate text-xs">
-                    Attention_Is_All_You_Need.txt
-                  </span>
-                </div>
-                <div className="text-[10px] text-content-muted font-mono pl-5">
-                  Page 1 to 3 • 4.9 KB
-                </div>
-              </div>
-              <div className="text-[11px] text-content-muted leading-relaxed">
-                Queries are scoped strictly to selected documents in your workspace.
-              </div>
-            </div>
-
-            {/* Center Column: Grounded Inquiry and Typeset Answer */}
-            <div className="md:col-span-5 border border-border bg-surface p-3.5 rounded-[5px] space-y-3">
-              <div className="text-[11px] font-mono text-content-muted uppercase tracking-wider font-semibold">
-                Researcher Inquiry
-              </div>
-              <div className="text-xs font-semibold text-content-primary">
-                "What is the primary contribution of the Transformer architecture?"
-              </div>
-
-              <div className="p-3 rounded-[5px] bg-canvas border border-border/70 text-xs leading-relaxed text-content-primary font-reading space-y-2">
-                <p>
-                  The primary contribution of the Transformer is the replacement of recurrent and convolutional layers entirely with multi-head self-attention mechanisms{" "}
-                  <span className="inline-block px-1 rounded-[3px] bg-citation border border-citation-border text-citation-text font-bold text-[10px] font-mono">
-                    [1]
-                  </span>.
-                </p>
-                <p>
-                  This architecture eliminates sequential computation constraints, allowing significantly greater parallelization during training while achieving superior translation quality{" "}
-                  <span className="inline-block px-1 rounded-[3px] bg-citation border border-citation-border text-citation-text font-bold text-[10px] font-mono">
-                    [2]
-                  </span>.
-                </p>
-              </div>
-
-              <div className="text-[11px] text-content-muted font-mono flex items-center justify-between pt-1">
-                <span>2 verified citations</span>
-                <span className="text-semantic-success-text">0 stripped</span>
-              </div>
-            </div>
-
-            {/* Right Column: Verified Ground Truth Citations */}
-            <div className="md:col-span-4 border border-border bg-surface-subtle p-3 rounded-[5px] space-y-2.5">
-              <div className="text-[10px] font-mono uppercase tracking-wider text-content-muted font-semibold flex items-center justify-between">
-                <span>Verified Evidence</span>
-                <span className="text-semantic-success-text flex items-center gap-1 font-mono text-[10px]">
-                  <CheckCircle2 className="w-3 h-3" /> Grounded
-                </span>
-              </div>
-
-              {/* Citation 1 Card */}
-              <div className="p-2.5 rounded-[5px] bg-surface border border-citation-border shadow-xs space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold font-mono text-citation-text">[1] Page 1</span>
-                  <span className="text-[10px] font-mono text-semantic-success-text">Grounded</span>
-                </div>
-                <p className="font-reading text-[11px] italic text-content-primary line-clamp-2">
-                  "We propose the Transformer, a model architecture eschewing recurrence and entirely relying on an attention mechanism."
-                </p>
-              </div>
-
-              {/* Citation 2 Card */}
-              <div className="p-2.5 rounded-[5px] bg-surface border border-citation-border shadow-xs space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-bold font-mono text-citation-text">[2] Page 2</span>
-                  <span className="text-[10px] font-mono text-semantic-success-text">Grounded</span>
-                </div>
-                <p className="font-reading text-[11px] italic text-content-primary line-clamp-2">
-                  "Experiments show these models to be superior in quality while being more parallelizable and requiring less training time."
-                </p>
-              </div>
-            </div>
+          {/* Right Column: Live Interactive Onboarding Widget */}
+          <div className="lg:col-span-6">
+            <LandingTryWidget config={config} />
           </div>
         </div>
       </section>
 
-      {/* Three-Stage Architecture Section */}
-      <section id="pipeline" className="py-16 sm:py-20 border-t border-border bg-surface">
+      {/* Section 1: How It Works */}
+      <section id="how-it-works" className="py-16 sm:py-20 border-t border-border bg-surface">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 space-y-12">
-          <div className="text-center max-w-xl mx-auto space-y-2">
+          <div className="space-y-2 max-w-xl">
             <span className="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
-              Deterministic Architecture
+              The Research Workflow
             </span>
             <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary">
-              How Grounded Research Operates
+              How DocuMind extracts and verifies knowledge
             </h2>
-            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed font-sans">
-              Every stage is deterministic, authenticated, and inspectable. No synthetic steps or opaque cloud indexing.
+            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+              Every step is deterministic and inspectable. No black-box cloud crawling or opaque indexes.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3 shadow-xs">
-              <div className="w-8 h-8 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3">
+              <div className="w-7 h-7 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-xs font-mono">
                 1
               </div>
               <h3 className="text-sm font-semibold text-content-primary">
-                Magic-Byte Extraction
+                Upload & Extract
               </h3>
-              <p className="text-xs text-content-secondary leading-relaxed font-sans">
-                Uploaded files are defensively checked for genuine binary headers (%PDF- and valid UTF-8). PyMuPDF extracts text page-by-page while preserving exact character coordinate bounds.
+              <p className="text-xs text-content-secondary leading-relaxed">
+                PyMuPDF extracts text page by page while maintaining exact page coordinate boundaries for every paragraph.
               </p>
             </div>
 
-            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3 shadow-xs">
-              <div className="w-8 h-8 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-sm">
+            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3">
+              <div className="w-7 h-7 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-xs font-mono">
                 2
               </div>
               <h3 className="text-sm font-semibold text-content-primary">
-                Sentence Chunking & Vector Store
+                Sentence Chunking
               </h3>
-              <p className="text-xs text-content-secondary leading-relaxed font-sans">
-                Text is segmented with strict token overlap across sentence boundaries. High-dimensional vector embeddings are stored in a persistent local ChromaDB instance isolated per visitor workspace.
+              <p className="text-xs text-content-secondary leading-relaxed">
+                Text is segmented along grammatical sentence boundaries and indexed as dense vector embeddings on persistent disk.
               </p>
             </div>
 
-            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3 shadow-xs">
-              <div className="w-8 h-8 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-sm">
+            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3">
+              <div className="w-7 h-7 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-xs font-mono">
                 3
               </div>
               <h3 className="text-sm font-semibold text-content-primary">
-                Server-Side Citation Filtering
+                Grounded Retrieval
               </h3>
-              <p className="text-xs text-content-secondary leading-relaxed font-sans">
-                When answers are synthesized, every bracketed token [N] is verified server-side against the candidate chunks retrieved. Hallucinated or unverified citation tokens are stripped before display.
+              <p className="text-xs text-content-secondary leading-relaxed">
+                Cosine similarity locates the most relevant source passages across your chosen documents.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-[6px] border border-border bg-canvas space-y-3">
+              <div className="w-7 h-7 rounded-[4px] bg-accent-subtle/80 text-accent flex items-center justify-center font-bold text-xs font-mono">
+                4
+              </div>
+              <h3 className="text-sm font-semibold text-content-primary">
+                Citation Checks
+              </h3>
+              <p className="text-xs text-content-secondary leading-relaxed">
+                Every citation token is checked server-side against retrieved chunks, removing any ungrounded references.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Comparison Matrix: Generative AI vs Grounded Research */}
-      <section id="comparison" className="py-16 sm:py-20 border-t border-border bg-canvas">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 space-y-8">
-          <div className="text-center max-w-lg mx-auto space-y-2">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
-              Calibrated Capabilities
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary">
-              Standard Generative AI vs DocuMind AI
-            </h2>
-            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
-              Why document researchers rely on server-validated ground truth over conversational memory.
-            </p>
-          </div>
-
-          <div className="rounded-[6px] border border-border bg-surface overflow-hidden shadow-xs">
-            <div className="grid grid-cols-12 p-3 bg-surface-subtle border-b border-border text-xs font-semibold text-content-primary">
-              <div className="col-span-4">Evaluation Dimension</div>
-              <div className="col-span-4 text-content-muted">Generic AI Chatbots</div>
-              <div className="col-span-4 text-accent">DocuMind Research Desk</div>
+      {/* Section 2: Check Every Answer (Core Differentiator with Real Screenshot) */}
+      <section id="verify" className="py-16 sm:py-24 border-t border-border bg-canvas">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 space-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 space-y-4 text-left">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
+                Authentic Verification
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary leading-tight">
+                Click any citation. See the exact paragraph.
+              </h2>
+              <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+                Generic chatbots synthesize text from diffuse memory and frequently invent page numbers. DocuMind checks every bracketed citation token on the server against your indexed chunks.
+              </p>
+              <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+                Clicking an inline citation chip slides open the evidence inspector, jumps to the exact page, and highlights the cited sentence.
+              </p>
+              <div className="pt-2">
+                <Link to="/workspace">
+                  <Button size="sm" icon={ArrowRight}>
+                    Try with your own documents
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            <div className="divide-y divide-border text-xs">
-              <div className="grid grid-cols-12 p-3.5 items-center">
-                <div className="col-span-4 font-medium text-content-primary">
-                  Source Grounding
-                </div>
-                <div className="col-span-4 text-content-secondary pr-2">
-                  Diffuse web training memory with potential confabulation
-                </div>
-                <div className="col-span-4 text-content-primary font-medium text-accent">
-                  Strictly bounded by your uploaded documents
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 p-3.5 items-center">
-                <div className="col-span-4 font-medium text-content-primary">
-                  Citation Verification
-                </div>
-                <div className="col-span-4 text-content-secondary pr-2">
-                  Model invents numbers or cites nonexistent pages
-                </div>
-                <div className="col-span-4 text-content-primary font-medium text-accent">
-                  Server-side check verifies every [N] token against retrieved chunks
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 p-3.5 items-center">
-                <div className="col-span-4 font-medium text-content-primary">
-                  Source Evidence Inspectability
-                </div>
-                <div className="col-span-4 text-content-secondary pr-2">
-                  No direct passage or document viewer link
-                </div>
-                <div className="col-span-4 text-content-primary font-medium text-accent">
-                  Dual-tab inspector jumps to exact quoted passage in PDF reader
-                </div>
-              </div>
-
-              <div className="grid grid-cols-12 p-3.5 items-center">
-                <div className="col-span-4 font-medium text-content-primary">
-                  Insufficient Context
-                </div>
-                <div className="col-span-4 text-content-secondary pr-2">
-                  Fills information gaps with plausible speculation
-                </div>
-                <div className="col-span-4 text-content-primary font-medium text-accent">
-                  Truthful refusal notice with citations withheld
-                </div>
+            <div className="lg:col-span-7">
+              <div className="rounded-[8px] border border-border bg-surface p-2 shadow-sm overflow-hidden">
+                <img
+                  src="/landing/research_citation_preview.png"
+                  alt="DocuMind AI research view with inline citations and split PDF reader"
+                  className="rounded-[6px] w-full h-auto border border-border/70"
+                />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Live System Limits Banner */}
-      {config && (
-        <section className="py-12 border-t border-border bg-surface">
-          <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center space-y-4">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-content-muted font-semibold">
-              Live System Limits (Reported by Active Engine)
-            </span>
-            <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-mono">
-              <span className="px-3 py-1.5 rounded-[5px] bg-surface-subtle border border-border">
-                Max Upload: {config.max_file_size_mb} MB
+      {/* Section 3: Works Across Multiple Documents */}
+      <section className="py-16 sm:py-20 border-t border-border bg-surface">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 space-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 order-2 lg:order-1">
+              <div className="rounded-[8px] border border-border bg-canvas p-2 shadow-sm overflow-hidden">
+                <img
+                  src="/landing/document_library_preview.png"
+                  alt="DocuMind AI document library table with sorting and batch selection"
+                  className="rounded-[6px] w-full h-auto border border-border/70"
+                />
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 space-y-4 text-left order-1 lg:order-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
+                Library Synthesis
               </span>
-              <span className="px-3 py-1.5 rounded-[5px] bg-surface-subtle border border-border">
-                Chunk Window: {config.default_chunk_size} tokens
-              </span>
-              <span className="px-3 py-1.5 rounded-[5px] bg-surface-subtle border border-border">
-                Overlap: {config.default_chunk_overlap} tokens
-              </span>
-              <span className="px-3 py-1.5 rounded-[5px] bg-surface-subtle border border-border">
-                Formats: {config.allowed_extensions.join(", ")}
-              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary leading-tight">
+                Synthesize findings across several sources
+              </h2>
+              <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+                Research is rarely confined to one file. Select any combination of papers, reports, or articles in your library to ask questions that compare methodologies, compare conclusions, and track ideas across authors.
+              </p>
+              <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+                Our property table organizes your collection with sorting, multi-select, and live processing stage feedback.
+              </p>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-surface py-10 px-4 sm:px-8 mt-auto">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-content-secondary">
-          <div className="flex items-center gap-2">
-            <BrandMark size={16} className="text-accent" />
-            <span className="font-semibold text-content-primary">DocuMind AI</span>
-            <span>•</span>
-            <span>Verifiable Document Intelligence</span>
+      {/* Section 4: What DocuMind Can and Cannot Do (Honest Limits) */}
+      <section id="capabilities" className="py-16 sm:py-20 border-t border-border bg-canvas">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 space-y-8">
+          <div className="space-y-2 text-left">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
+              Honest Boundaries
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary">
+              What it can and cannot do
+            </h2>
+            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+              We describe system boundaries plainly so researchers know when to use DocuMind and when to double check.
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 text-content-secondary">
-            <Link to="/workspace" className="hover:text-content-primary transition-colors">
-              Workspace
-            </Link>
-            <Link to="/docs" className="hover:text-content-primary transition-colors">
-              Documentation
-            </Link>
-            <Link to="/settings" className="hover:text-content-primary transition-colors">
-              Settings
-            </Link>
-            <Link to="/privacy" className="hover:text-content-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="/terms" className="hover:text-content-primary transition-colors">
-              Terms
-            </Link>
-            <Link to="/design-system" className="hover:text-content-primary transition-colors">
-              Design System
-            </Link>
-            <a
-              href="https://github.com/harshchavan009/Document-AI"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-content-primary transition-colors"
-            >
-              GitHub
-            </a>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="p-4 rounded-[6px] border border-border bg-surface space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                <span>Supported Formats</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                PDF and plain text documents (`.pdf`, `.txt`) up to {config?.max_file_size_mb || 20} MB and {config?.max_pdf_pages || 50} pages per document.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-[6px] border border-border bg-surface space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <AlertCircle className="w-4 h-4 text-semantic-warning-text shrink-0" />
+                <span>Scanned Image PDFs</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                PDFs must contain an embedded digital text layer. Scanned images without OCR are rejected honestly with a clear error explanation.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-[6px] border border-border bg-surface space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
+                <span>Server Citation Filtering</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                Every citation token is verified against retrieved chunks. Unverified citation numbers are stripped before the response renders.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-[6px] border border-border bg-surface space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <AlertCircle className="w-4 h-4 text-semantic-warning-text shrink-0" />
+                <span>Verification Responsibility</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                AI answers can misinterpret subtle context. Citations link directly to the source page so you can verify critical facts yourself.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 5: Your Documents and Privacy */}
+      <section id="privacy-overview" className="py-16 sm:py-20 border-t border-border bg-surface">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 space-y-8">
+          <div className="space-y-2 text-left">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-accent font-semibold">
+              Privacy by Design
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary">
+              Your documents and private retention
+            </h2>
+            <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
+              We treat uploaded research as private work. Here is exactly what happens to your files.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+            <div className="p-4 rounded-[6px] border border-border bg-canvas space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <Lock className="w-4 h-4 text-accent shrink-0" />
+                <span>Isolated Sessions</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                Documents are scoped to a signed, httpOnly visitor cookie. No user can access or view another visitor's files or chats.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-[6px] border border-border bg-canvas space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <Clock className="w-4 h-4 text-accent shrink-0" />
+                <span>7-Day Automatic Purge</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                An automated retention reaper prunes inactive workspaces after {config?.data_retention_days || 7} days. Nothing is stored indefinitely.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-[6px] border border-border bg-canvas space-y-2">
+              <div className="flex items-center gap-2 font-semibold text-content-primary">
+                <Trash2 className="w-4 h-4 text-accent shrink-0" />
+                <span>Instant Data Erasure</span>
+              </div>
+              <p className="text-content-secondary leading-relaxed">
+                Click Delete all my data in Settings anytime to immediately delete database rows, disk files, and vector embeddings.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 6: Frequently Asked Questions */}
+      <section className="py-16 sm:py-20 border-t border-border bg-canvas">
+        <div className="max-w-3xl mx-auto px-4 sm:px-8 space-y-8">
+          <div className="space-y-2 text-center">
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-content-primary">
+              Frequently asked questions
+            </h2>
+            <p className="text-xs sm:text-sm text-content-secondary">
+              Common questions about document research, citations, and data handling.
+            </p>
+          </div>
+
+          <div className="divide-y divide-border border-y border-border">
+            {faqItems.map((item, idx) => (
+              <div key={idx} className="py-4">
+                <button
+                  type="button"
+                  onClick={() => toggleFaq(idx)}
+                  className="w-full flex items-center justify-between text-left text-xs font-semibold text-content-primary gap-4 cursor-pointer"
+                >
+                  <span>{item.q}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-content-muted shrink-0 transition-transform ${
+                      openFaq === idx ? "rotate-180 text-accent" : ""
+                    }`}
+                  />
+                </button>
+                {openFaq === idx && (
+                  <p className="pt-2 text-xs text-content-secondary leading-relaxed">
+                    {item.a}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-surface py-12 px-4 sm:px-8 mt-auto text-xs text-content-secondary">
+        <div className="max-w-5xl mx-auto space-y-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-border">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <BrandMark size={16} className="text-accent" />
+                <span className="font-semibold text-content-primary">DocuMind AI</span>
+              </div>
+              <p className="text-[11px] text-content-muted">
+                Your documents. Understood intelligently.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-xs">
+              <Link to="/workspace" className="hover:text-content-primary transition-colors">
+                Workspace
+              </Link>
+              <Link to="/docs" className="hover:text-content-primary transition-colors">
+                Documentation
+              </Link>
+              <Link to="/privacy" className="hover:text-content-primary transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/terms" className="hover:text-content-primary transition-colors">
+                Terms
+              </Link>
+              <button
+                type="button"
+                onClick={() => setFeedbackOpen(true)}
+                className="hover:text-content-primary transition-colors cursor-pointer"
+              >
+                Feedback
+              </button>
+              <a
+                href="https://github.com/harshchavan009/Document-AI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-content-primary transition-colors"
+              >
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          <div className="space-y-2 text-[11px] text-content-muted">
+            <p>
+              Sample document: Vaswani et al. (2017), Attention Is All You Need, arXiv:1706.03762. Distributed under the arXiv non-exclusive license. Used for scholarly and educational demonstration under fair use with attribution.
+            </p>
+            <p>
+              DocuMind AI uses Google Gemini API for dense vector embeddings and answer synthesis.
+            </p>
           </div>
         </div>
       </footer>
+
+      {/* Feedback Modal */}
+      <FeedbackModal isOpen={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </div>
   );
 }

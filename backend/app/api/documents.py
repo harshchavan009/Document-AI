@@ -75,7 +75,7 @@ def ingest_sample_document(
     db: Session = Depends(get_db)
 ):
     """
-    Ingests the bundled public-domain sample paper into the workspace.
+    Ingests the bundled sample research paper into the workspace.
     Verifies workspace session ownership, then enqueues real text extraction,
     sentence chunking, and ChromaDB vector indexing.
     """

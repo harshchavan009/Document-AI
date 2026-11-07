@@ -185,7 +185,7 @@ class DocumentService:
     @staticmethod
     def ingest_sample_document(workspace_id: str, db: Session, background_tasks: BackgroundTasks) -> Document:
         """
-        Ingests the bundled public-domain sample paper into the workspace.
+        Ingests the bundled sample research paper into the workspace.
         """
         workspace = db.query(Workspace).filter(Workspace.id == workspace_id).first()
         if not workspace:

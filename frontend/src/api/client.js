@@ -63,6 +63,11 @@ export const api = {
     return handleResponse(res);
   },
 
+  async getReady() {
+    const res = await authFetch(`${BASE_URL}/ready`);
+    return handleResponse(res);
+  },
+
   // Workspaces
   async getWorkspaces() {
     const res = await authFetch(`${BASE_URL}/workspaces`);

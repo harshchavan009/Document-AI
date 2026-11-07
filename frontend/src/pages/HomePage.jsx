@@ -253,11 +253,11 @@ export function HomePage() {
                 Try instantly with a sample paper
               </span>
               <span className="text-[10px] uppercase font-mono px-1.5 py-0.2 rounded bg-surface-subtle text-content-muted border border-border">
-                Public Domain
+                arXiv Preprint
               </span>
             </div>
             <p className="text-xs text-content-secondary">
-              Ingests "Attention Is All You Need" (Vaswani et al.) through the real extraction and vector indexing pipeline.
+              Attention Is All You Need (Vaswani et al., 2017). Educational demonstration under fair use.
             </p>
           </div>
 

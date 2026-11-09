@@ -72,7 +72,7 @@ export function TermsPage() {
               2. Source Citations and Ground Truth Verification
             </h2>
             <p>
-              DocuMind AI implements deterministic chunk extraction and server-side citation validation to strip hallucinated citations. However, generative synthesis should always be reviewed against the linked primary source passages before taking critical actions.
+              DocuMind AI implements structured chunk extraction and server-side citation validation to strip hallucinated citations. However, generative synthesis should always be reviewed against the linked primary source passages before taking critical actions. DocuMind AI does not provide medical, clinical, legal, financial, or engineering certification advice.
             </p>
           </section>
 

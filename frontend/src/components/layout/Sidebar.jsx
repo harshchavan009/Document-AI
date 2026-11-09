@@ -283,7 +283,7 @@ export function Sidebar({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Clinical Research Papers"
+                  placeholder="e.g. Technical Architecture Review"
                   value={newWsName}
                   onChange={(e) => setNewWsName(e.target.value)}
                   className="w-full h-8 px-2.5 text-xs bg-canvas border border-border rounded-[5px] text-content-primary focus:outline-none focus:border-accent"

@@ -274,7 +274,7 @@ export function HomePage() {
               Sample Document: Attention Is All You Need
             </span>
             <p className="text-[11px] text-content-muted leading-relaxed">
-              arXiv:1706.03762 (Vaswani et al., 2017). Educational demonstration under fair use. Contains the foundational Transformer architecture paper across 11 pages.
+              arXiv:1706.03762 (Vaswani et al., 2017). Sourced under the arXiv non-exclusive distribution license. Contains foundational Transformer architecture sections for research demonstration.
             </p>
           </div>
         </div>

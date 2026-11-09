@@ -212,7 +212,7 @@ export function LandingPage() {
               How DocuMind extracts and verifies knowledge
             </h2>
             <p className="text-xs sm:text-sm text-content-secondary leading-relaxed">
-              Every step is deterministic and inspectable. No black-box cloud crawling or opaque indexes.
+              Document extraction, vector retrieval, and citation validation are inspectable at every step. Answers are synthesized by Google Gemini strictly from retrieved chunks.
             </p>
           </div>
 
@@ -420,7 +420,7 @@ export function LandingPage() {
                 <span>Isolated Sessions</span>
               </div>
               <p className="text-content-secondary leading-relaxed">
-                Documents are scoped to a signed, httpOnly visitor cookie. No user can access or view another visitor's files or chats.
+                Documents are scoped to a secure, httpOnly visitor session cookie. No user can access or view another visitor's files or chats.
               </p>
             </div>
 
@@ -559,7 +559,7 @@ export function LandingPage() {
 
           <div className="space-y-2 text-[11px] text-content-muted">
             <p>
-              Sample document: Vaswani et al. (2017), Attention Is All You Need, arXiv:1706.03762. Distributed under the arXiv non-exclusive license. Used for scholarly and educational demonstration under fair use with attribution.
+              Sample document: Vaswani et al. (2017), Attention Is All You Need, arXiv:1706.03762. Sourced under the arXiv non-exclusive distribution license for scholarly demonstration with attribution.
             </p>
             <p>
               DocuMind AI uses Google Gemini API for dense vector embeddings and answer synthesis.

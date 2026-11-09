@@ -16,9 +16,12 @@ from backend.app.api import (
     chat,
     feedback
 )
+import secrets
 from backend.app.utils.security import (
     SESSION_COOKIE_NAME,
-    generate_session_token
+    CSRF_COOKIE_NAME,
+    generate_session_token,
+    generate_csrf_token
 )
 from slowapi.errors import RateLimitExceeded
 from backend.app.utils.limiter import limiter
@@ -91,7 +94,7 @@ def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 @app.middleware("http")
 async def security_and_session_middleware(request: Request, call_next):
     """
-    Enforces security headers and assigns a cryptographic visitor session token.
+    Enforces security headers, visitor session cookie isolation, and CSRF token defense.
     All workspace and document lookups are scoped by this identity.
     """
     request_id = str(uuid.uuid4())[:8]
@@ -108,6 +111,18 @@ async def security_and_session_middleware(request: Request, call_next):
 
     request.state.session_id = session_id
 
+    # CSRF protection on state-changing methods for cookie-authenticated browser sessions
+    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        csrf_cookie = request.cookies.get(CSRF_COOKIE_NAME)
+        if csrf_cookie:
+            csrf_header = request.headers.get("X-CSRF-Token")
+            if not csrf_header or not secrets.compare_digest(csrf_cookie, csrf_header):
+                logger.warning(f"CSRF validation failed on {request.method} {request.url.path}")
+                return JSONResponse(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    content={"detail": "CSRF validation failed. Missing or invalid X-CSRF-Token header."}
+                )
+
     response: Response = await call_next(request)
 
     duration = time.time() - start_time
@@ -119,8 +134,8 @@ async def security_and_session_middleware(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-    # Set session cookie if new or missing
-    if is_new_session:
+    # Set session cookie if new or missing from incoming cookies
+    if is_new_session or SESSION_COOKIE_NAME not in request.cookies:
         response.set_cookie(
             key=SESSION_COOKIE_NAME,
             value=session_id,
@@ -129,6 +144,18 @@ async def security_and_session_middleware(request: Request, call_next):
             secure=settings.APP_ENV == "production",
             max_age=60 * 60 * 24 * 30  # 30 days
         )
+
+    # Issue or preserve CSRF cookie (readable by frontend JS for X-CSRF-Token header)
+    csrf_token = request.cookies.get(CSRF_COOKIE_NAME) or generate_csrf_token()
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=csrf_token,
+        httponly=False,
+        samesite="lax",
+        secure=settings.APP_ENV == "production",
+        max_age=60 * 60 * 24 * 30
+    )
+    response.headers["X-CSRF-Token"] = csrf_token
 
     return response
 

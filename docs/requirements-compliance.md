@@ -68,7 +68,7 @@
 | **H4** | Every interactive feature uses the real API. Zero dead controls. | **Pass** | Verified all controls wired to `api.js` client methods. | None. Command palette, filters, search, retries, export, purge, and feedback modals all call real backend endpoints. |
 | **I1** | Gemini key only on backend, env vars, .env ignored by Git, .env.example present. | **Pass** | `git grep -i "GEMINI_API_KEY" frontend/` (0 matches)<br>`.gitignore:2` | None. Frontend has zero knowledge of API keys. Key managed strictly via backend configuration. |
 | **I2** | File type/size validation, safe storage, appropriate CORS, request validation, timeouts, rate-limit handling, logging without secrets. | **Pass** | `backend/app/api/documents.py`<br>`backend/app/utils/circuit_breaker.py`<br>`slowapi` limiter | None. Complete defense-in-depth security layer verified by automated tests. |
-| **I3** | Document isolation between workspaces or users. Cross-workspace access blocked. | **Partial** | `frontend/src/pages/SettingsPage.jsx:230-245`<br>`frontend/src/api/client.js:13-20` | **Gap:** Security & Privacy defect: session token is displayed in Settings with a Copy button ("Cryptographic session token"). Exposes token to shoulder surfing. Client generates token in `localStorage`. Must remove token display/copy button, remove `localStorage` token generation, and enforce pure `httpOnly`, Secure, SameSite cookie authentication with CSRF token for state-changing requests. |
+| **I3** | Document isolation between workspaces or users. Cross-workspace access blocked. | **Pass** | `frontend/src/pages/SettingsPage.jsx:215-255`<br>`frontend/src/api/client.js:13-35`<br>`backend/tests/test_isolation_security.py` (13 tests passing) | None. Visitor session token removed from screen display and Copy button eliminated. Client `localStorage` token generation removed. Server issues 256-bit cryptographically secure tokens stored in `httpOnly`, `Secure`, `SameSite=Lax` cookie `dm_session`. CSRF double-submit token protection enforced on state-changing requests. All 13 isolation tests passing. |
 | **I4** | Deletion removes associated vectors. | **Pass** | `backend/app/services/document_service.py:189-215`<br>`backend/tests/test_lifecycle_security.py` | None. Deletion atomically removes database row, physical file on disk, and ChromaDB vector embeddings by document ID. |
 | **I5** | Security pass: hidden API keys, env checks, CORS, security headers, Git history scanned for secrets. | **Pass** | `git grep -E "AIza[0-9A-Za-z_-]{35}"` (0 matches)<br>`curl -I http://127.0.0.1:8001/` | None. Security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`) present on all responses. |
 | **I6** | No claim of enterprise-grade security or compliance anywhere in UI or docs. | **Partial** | `frontend/src/pages/DocsPage.jsx:215`<br>`frontend/src/components/layout/Sidebar.jsx:110` | **Gap:** Clinical trials positioning present in Docs ("literature analysis, clinical trials, and technical documentation") and Sidebar placeholder ("e.g. Clinical Research Papers"). Remove all clinical positioning and add plain note that answers must be checked against cited page. |
@@ -96,14 +96,14 @@
 ## 2. Quantitative Status Breakdown
 
 - **Total Requirements Evaluated:** 55 items
-- **Pass:** **39 items (70.9%)**
-- **Partial (Defects Identified):** **13 items (23.6%)**
+- **Pass:** **40 items (72.7%)**
+- **Partial (Defects Identified):** **12 items (21.8%)**
   - `A3`, `A5`, `A7`, `A9` (Landing copy, overclaims, dynamic config, sample paper licensing)
   - `B1`, `B3`, `B4` (Sidebar navigation items, unlabelled header icons, hardcoded page count)
   - `C1`, `C5` (Duplicate Library CTAs, 7 individual status filters)
   - `D2` (Research copy jargon)
   - `H2` (Button flex layout bug in Settings)
-  - `I3`, `I6` (Session token screen exposure / identity model audit, clinical positioning)
+  - `I6` (Clinical positioning in Docs and Sidebar)
   - `L2` (Docs routing mismatch, stale names, user guide structure)
   - `R1`, `R2`, `R3` (Cross-cutting: static strings, cute copy, overclaims)
 - **Fail:** **0 items (0.0%)** (no core RAG or API requirements are broken or absent)

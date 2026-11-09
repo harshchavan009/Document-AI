@@ -5,10 +5,16 @@ from fastapi import Request, HTTPException, status
 
 
 SESSION_COOKIE_NAME = "dm_session"
+CSRF_COOKIE_NAME = "dm_csrf"
 
 
 def generate_session_token() -> str:
-    """Generates a cryptographically secure visitor session token."""
+    """Generates a cryptographically secure visitor session token with 256 bits of entropy."""
+    return secrets.token_urlsafe(32)
+
+
+def generate_csrf_token() -> str:
+    """Generates a cryptographically secure CSRF defense token."""
     return secrets.token_urlsafe(32)
 
 

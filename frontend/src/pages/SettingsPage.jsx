@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useWorkspace } from "../context/WorkspaceContext";
-import { api, getSessionToken } from "../api/client";
+import { api } from "../api/client";
 import { Button } from "../components/ui/Button";
 import { FeedbackModal } from "../components/ui/FeedbackModal";
 import { usePageMeta } from "../hooks/usePageMeta";
@@ -31,7 +31,6 @@ export function SettingsPage() {
   usePageMeta("Settings", "Manage workspace preferences, appearance, visitor identity, and data lifecycle.");
 
   const [config, setConfig] = useState(null);
-  const [copiedToken, setCopiedToken] = useState(false);
   const [purging, setPurging] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [purgeConfirmOpen, setPurgeConfirmOpen] = useState(false);
@@ -45,13 +44,6 @@ export function SettingsPage() {
   useEffect(() => {
     api.getConfig().then(setConfig).catch(() => {});
   }, []);
-
-  const handleCopySessionToken = () => {
-    const token = getSessionToken();
-    navigator.clipboard.writeText(token);
-    setCopiedToken(true);
-    setTimeout(() => setCopiedToken(false), 2000);
-  };
 
   const handlePurgeAllData = async () => {
     setPurging(true);
@@ -202,9 +194,14 @@ export function SettingsPage() {
               <span className="font-semibold text-content-primary block">
                 {activeWorkspace?.name || "Default Workspace"}
               </span>
-              <span className="font-mono text-[11px] text-content-muted block mt-0.5 select-all">
-                Workspace ID: {activeWorkspace?.id || "None"}
-              </span>
+              <details className="mt-1 text-[11px] text-content-muted cursor-pointer">
+                <summary className="hover:text-content-primary transition-colors">
+                  Advanced details
+                </summary>
+                <span className="font-mono text-[10px] text-content-secondary block mt-1 select-all bg-surface-subtle px-2 py-1 rounded border border-border">
+                  Workspace ID: {activeWorkspace?.id || "None"}
+                </span>
+              </details>
             </div>
             <span className="text-[11px] text-content-muted">
               {workspaces.length} workspace{workspaces.length === 1 ? "" : "s"} configured
@@ -221,27 +218,25 @@ export function SettingsPage() {
             <span>Visitor Identity & Data Lifecycle</span>
           </h2>
           <p className="text-xs text-content-secondary mt-0.5">
-            Your research desk operates without passwords. Data is bound strictly to your cryptographic session token.
+            Your research desk operates without passwords. Workspaces and documents are bound to an encrypted visitor session.
           </p>
         </div>
 
         <div className="rounded-[6px] border border-border bg-surface p-4 space-y-4 text-xs">
-          <div>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-content-muted block mb-1">
-              Cryptographic Session Token
-            </span>
+          {/* Identity Protection Status */}
+          <div className="p-3 rounded-[5px] bg-surface-subtle border border-border space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[11px] text-content-secondary truncate max-w-sm select-all bg-surface-subtle px-2 py-1 rounded border border-border">
-                {getSessionToken()}
+              <span className="inline-block w-2 h-2 rounded-full bg-semantic-success-text" />
+              <span className="font-semibold text-content-primary">
+                Encrypted Visitor Session (Active)
               </span>
-              <button
-                type="button"
-                onClick={handleCopySessionToken}
-                className="text-xs text-accent hover:underline font-medium cursor-pointer"
-              >
-                {copiedToken ? "Copied" : "Copy"}
-              </button>
             </div>
+            <p className="text-[11px] text-content-secondary leading-normal">
+              Your documents, vector embeddings, and conversation threads are isolated to an httpOnly cookie issued directly by the server. Credentials are never accessible to client scripts or exposed on screen.
+            </p>
+            <p className="text-[11px] text-content-muted leading-normal pt-1 border-t border-border/40">
+              <strong>Notice:</strong> Clearing your browser cookies will end your access to this visitor workspace. To preserve documents and chat history across devices or before clearing browser data, use the Export Data action below.
+            </p>
           </div>
 
           {/* Retention Notice */}

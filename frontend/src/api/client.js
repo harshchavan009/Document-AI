@@ -10,20 +10,24 @@ export class ApiError extends Error {
   }
 }
 
-export function getSessionToken() {
-  let token = localStorage.getItem("dm_session_token");
-  if (!token) {
-    token = "dm_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
-    localStorage.setItem("dm_session_token", token);
-  }
-  return token;
+export function getCsrfToken() {
+  if (typeof document === "undefined") return "";
+  const match = document.cookie.match(/(?:^|;\s*)dm_csrf=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : "";
 }
 
 function authFetch(url, options = {}) {
-  const headers = {
-    "X-Session-ID": getSessionToken(),
-    ...(options.headers || {}),
-  };
+  const method = (options.method || "GET").toUpperCase();
+  const headers = { ...(options.headers || {}) };
+
+  // Attach CSRF protection header on state-changing requests
+  if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers["X-CSRF-Token"] = csrfToken;
+    }
+  }
+
   return fetch(url, {
     ...options,
     credentials: "include",
@@ -160,7 +164,10 @@ export const api = {
       };
 
       xhr.open("POST", `${BASE_URL}/documents/upload`);
-      xhr.setRequestHeader("X-Session-ID", getSessionToken());
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        xhr.setRequestHeader("X-CSRF-Token", csrfToken);
+      }
       xhr.withCredentials = true;
       xhr.send(formData);
     });
@@ -310,9 +317,7 @@ export const api = {
       method: "DELETE",
     });
     const data = await handleResponse(res);
-    if (data.new_session_id) {
-      localStorage.setItem("dm_session_token", data.new_session_id);
-    }
+    localStorage.removeItem("dm_session_token");
     return data;
   },
 

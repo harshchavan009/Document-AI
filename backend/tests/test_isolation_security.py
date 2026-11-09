@@ -229,3 +229,48 @@ def test_max_pdf_page_limit_enforcement(client, sample_workspace, generate_sampl
     assert len(data["rejected"]) == 1
     assert "50 pages" in data["rejected"][0]["reason"]
 
+
+def test_csrf_rejection_on_mutating_requests_with_invalid_or_missing_token(client, sample_workspace):
+    """
+    Verifies that state-changing requests from cookie-authenticated browser sessions
+    are rejected with 403 Forbidden if the X-CSRF-Token header is missing or forged.
+    """
+    client.cookies.set("dm_session", "session_user_with_cookie_123")
+    client.cookies.set("dm_csrf", "legitimate_csrf_token_secret_456")
+    client.headers.pop("X-CSRF-Token", None)
+
+    # 1. Missing header -> 403
+    res_missing = client.post(
+        "/api/workspaces",
+        json={"name": "Attacker Workspace"}
+    )
+    assert res_missing.status_code == 403
+    assert "CSRF validation failed" in res_missing.json()["detail"]
+
+    # 2. Forged header -> 403
+    res_forged = client.post(
+        "/api/workspaces",
+        json={"name": "Attacker Workspace"},
+        headers={"X-CSRF-Token": "forged_attacker_token_789"}
+    )
+    assert res_forged.status_code == 403
+    assert "CSRF validation failed" in res_forged.json()["detail"]
+
+
+def test_csrf_acceptance_with_matching_token(client):
+    """
+    Verifies that state-changing requests succeed when the X-CSRF-Token header
+    matches the active dm_csrf cookie.
+    """
+    valid_csrf = "matching_csrf_token_secret_777"
+    client.cookies.set("dm_session", "session_user_valid_123")
+    client.cookies.set("dm_csrf", valid_csrf)
+
+    res = client.post(
+        "/api/workspaces",
+        json={"name": "Valid Research Desk"},
+        headers={"X-CSRF-Token": valid_csrf}
+    )
+    assert res.status_code == 201
+    assert res.json()["name"] == "Valid Research Desk"
+

@@ -17,8 +17,10 @@ from backend.app.schemas import (
 from backend.app.utils.security import (
     get_or_create_session_id,
     generate_session_token,
+    generate_csrf_token,
     verify_workspace_access,
-    SESSION_COOKIE_NAME
+    SESSION_COOKIE_NAME,
+    CSRF_COOKIE_NAME
 )
 from backend.app.services.vector_store import VectorStoreService
 from backend.app.config import settings
@@ -125,7 +127,17 @@ def purge_session_data(request: Request, response: Response, db: Session = Depen
         secure=settings.APP_ENV == "production",
         max_age=60 * 60 * 24 * 30
     )
+    new_csrf = generate_csrf_token()
+    response.set_cookie(
+        key=CSRF_COOKIE_NAME,
+        value=new_csrf,
+        httponly=False,
+        samesite="lax",
+        secure=settings.APP_ENV == "production",
+        max_age=60 * 60 * 24 * 30
+    )
     response.headers["X-New-Session-ID"] = new_token
+    response.headers["X-CSRF-Token"] = new_csrf
 
     return {
         "success": True,

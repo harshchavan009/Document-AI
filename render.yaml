@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: documind-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /api/ready
+    disk:
+      name: documind-storage
+      mountPath: /app/storage
+      sizeGB: 5
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STORAGE_DIR
+        value: /app/storage
+      - key: UPLOADS_DIR
+        value: /app/storage/uploads
+      - key: CHROMA_DIR
+        value: /app/storage/chroma
+      - key: DATABASE_URL
+        value: sqlite:////app/storage/documind.db

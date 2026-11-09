@@ -103,7 +103,7 @@ export function SettingsPage() {
             <span>Appearance & Theme</span>
           </h2>
           <p className="text-xs text-content-secondary mt-0.5">
-            Choose your preferred desk lighting. Light mode is calibrated for paper reading; dark mode provides charcoal contrast.
+            Choose your preferred interface theme.
           </p>
         </div>
 
@@ -126,7 +126,7 @@ export function SettingsPage() {
               Light
             </span>
             <span className="text-[11px] text-content-secondary mt-0.5 block">
-              Warm paper reading palette with Forest Pine accents.
+              High-contrast light interface for focused document reading.
             </span>
           </button>
 
@@ -148,7 +148,7 @@ export function SettingsPage() {
               Dark
             </span>
             <span className="text-[11px] text-content-secondary mt-0.5 block">
-              Charcoal obsidian canvas with warm citation markers.
+              Low-glare dark interface for extended research sessions.
             </span>
           </button>
 
@@ -170,7 +170,7 @@ export function SettingsPage() {
               System
             </span>
             <span className="text-[11px] text-content-secondary mt-0.5 block">
-              Synchronizes automatically with operating system settings.
+              Matches your operating system appearance preference automatically.
             </span>
           </button>
         </div>
@@ -255,61 +255,61 @@ export function SettingsPage() {
           {/* Action Cards */}
           <div className="pt-3 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Export */}
-            <div className="p-3 rounded-[5px] border border-border bg-surface space-y-2 flex flex-col justify-between">
+            <div className="p-3.5 rounded-[5px] border border-border bg-surface space-y-3 flex flex-col justify-between">
               <div>
                 <span className="font-semibold text-content-primary block">Export Data</span>
-                <p className="text-[11px] text-content-muted mt-0.5">
+                <p className="text-[11px] text-content-muted mt-1 leading-normal">
                   Download all uploaded files, citations, and conversation logs in a .zip archive.
                 </p>
               </div>
               <Button
                 variant="secondary"
-                size="xs"
+                size="sm"
+                icon={Download}
                 onClick={handleExportData}
                 loading={exporting}
                 disabled={exporting}
-                className="w-full inline-flex items-center justify-center gap-1.5"
+                className="w-full"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download .zip</span>
+                Download .zip
               </Button>
             </div>
 
             {/* Feedback */}
-            <div className="p-3 rounded-[5px] border border-border bg-surface space-y-2 flex flex-col justify-between">
+            <div className="p-3.5 rounded-[5px] border border-border bg-surface space-y-3 flex flex-col justify-between">
               <div>
                 <span className="font-semibold text-content-primary block">Share Feedback</span>
-                <p className="text-[11px] text-content-muted mt-0.5">
+                <p className="text-[11px] text-content-muted mt-1 leading-normal">
                   Report an issue, suggest improvements, or ask a question directly.
                 </p>
               </div>
               <Button
                 variant="secondary"
-                size="xs"
+                size="sm"
+                icon={MessageSquare}
                 onClick={() => setFeedbackModalOpen(true)}
-                className="w-full inline-flex items-center justify-center gap-1.5"
+                className="w-full"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Send Feedback</span>
+                Send feedback
               </Button>
             </div>
 
             {/* Purge */}
-            <div className="p-3 rounded-[5px] border border-semantic-error-border/40 bg-semantic-error-surface/20 space-y-2 flex flex-col justify-between">
+            <div className="p-3.5 rounded-[5px] border border-semantic-error-border/40 bg-semantic-error-surface/20 space-y-3 flex flex-col justify-between">
               <div>
                 <span className="font-semibold text-semantic-error-text block">Delete All Data</span>
-                <p className="text-[11px] text-content-muted mt-0.5">
+                <p className="text-[11px] text-content-muted mt-1 leading-normal">
                   Permanently erase all files, vector embeddings, and conversation threads.
                 </p>
               </div>
               <Button
                 variant="danger"
-                size="xs"
+                size="sm"
+                icon={Trash2}
                 onClick={() => setPurgeConfirmOpen(true)}
-                className="w-full inline-flex items-center justify-center gap-1.5"
+                className="w-full"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete All Data</span>
+                Delete all data
               </Button>
             </div>
           </div>

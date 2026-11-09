@@ -16,7 +16,7 @@ export function Header({ onToggleSidebar }) {
   const getBreadcrumbs = () => {
     const path = location.pathname;
     if (path === "/workspace/documents") return "Document Library";
-    if (path === "/workspace/research") return "Research Desk";
+    if (path === "/workspace/research") return "AI Research";
     if (path === "/workspace/settings") return "Settings";
     if (path === "/system") return "System Diagnostics";
     if (path === "/docs") return "System Documentation";

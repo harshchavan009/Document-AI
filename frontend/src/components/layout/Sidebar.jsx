@@ -35,9 +35,9 @@ export function Sidebar({
     /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent);
 
   const navItems = [
-    { label: "Home", path: "/workspace", icon: Layers },
+    { label: "Overview", path: "/workspace", icon: Layers },
     { label: "Document Library", path: "/workspace/documents", icon: FileText },
-    { label: "Research Desk", path: "/workspace/research", icon: Sparkles },
+    { label: "AI Research", path: "/workspace/research", icon: Sparkles },
     { label: "Settings", path: "/workspace/settings", icon: Settings },
   ];
 
@@ -112,26 +112,38 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Workspace Switcher */}
+        {/* Workspace Switcher & New Workspace Action */}
         {!collapsed && (
-          <div className="p-2.5 border-b border-border relative">
-            <button
-              type="button"
-              onClick={() => setShowWsMenu(!showWsMenu)}
-              className="w-full flex items-center justify-between p-1.5 rounded-[5px] hover:bg-surface-subtle border border-border/70 text-left transition-colors cursor-pointer"
-              title="Switch or create workspace"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
-                <span className="text-xs font-semibold text-content-primary truncate">
-                  {activeWorkspace?.name || "Default Workspace"}
-                </span>
-              </div>
-              <ChevronDown className="w-3.5 h-3.5 text-content-muted shrink-0" />
-            </button>
+          <div className="p-2 border-b border-border relative">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setShowWsMenu(!showWsMenu)}
+                className="flex-1 min-w-0 flex items-center justify-between p-1.5 rounded-[5px] hover:bg-surface-subtle border border-border/70 text-left transition-colors cursor-pointer"
+                title="Switch workspace"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <Layers className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <span className="text-xs font-semibold text-content-primary truncate">
+                    {activeWorkspace?.name || "Default Workspace"}
+                  </span>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-content-muted shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(true)}
+                className="p-1.5 rounded-[5px] hover:bg-surface-subtle border border-border/70 text-content-secondary hover:text-accent transition-colors cursor-pointer"
+                title="New workspace"
+                aria-label="New workspace"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
 
             {showWsMenu && (
-              <div className="absolute top-full left-2.5 right-2.5 mt-1 z-40 bg-surface border border-border rounded-[6px] shadow-lg p-1 space-y-0.5">
+              <div className="absolute top-full left-2 right-2 mt-1 z-40 bg-surface border border-border rounded-[6px] shadow-lg p-1 space-y-0.5">
                 <div className="text-[10px] uppercase font-semibold text-content-muted px-2 py-1 tracking-wider">
                   Workspaces ({workspaces.length})
                 </div>
@@ -204,35 +216,25 @@ export function Sidebar({
 
         {/* Footer info: Documentation & System Diagnostics links */}
         {!collapsed ? (
-          <div className="p-2.5 border-t border-border space-y-1">
+          <div className="p-2.5 border-t border-border space-y-0.5">
             <Link
               to="/system"
               onClick={handleNavClick}
-              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors"
-              title="System Diagnostics and pipeline parameters"
+              className="w-full flex items-center gap-2 p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors"
+              title="System Diagnostics and pipeline telemetry"
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <Activity className="w-3.5 h-3.5 text-content-muted shrink-0" />
-                <span className="truncate">System Diagnostics</span>
-              </div>
-              <span className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-muted border border-border rounded-[3px]">
-                /system
-              </span>
+              <Activity className="w-3.5 h-3.5 text-content-muted shrink-0" />
+              <span className="truncate">System Diagnostics</span>
             </Link>
 
             <Link
               to="/docs"
               onClick={handleNavClick}
-              className="w-full flex items-center justify-between p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors"
+              className="w-full flex items-center gap-2 p-1.5 rounded-[5px] text-content-secondary hover:text-content-primary hover:bg-surface-subtle text-xs transition-colors"
               title="Documentation and technical specifications"
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <BookOpen className="w-3.5 h-3.5 text-content-muted shrink-0" />
-                <span className="truncate">Documentation</span>
-              </div>
-              <span className="text-[10px] font-mono px-1 py-0.2 bg-surface text-content-muted border border-border rounded-[3px]">
-                /docs
-              </span>
+              <BookOpen className="w-3.5 h-3.5 text-content-muted shrink-0" />
+              <span className="truncate">Documentation</span>
             </Link>
           </div>
         ) : (

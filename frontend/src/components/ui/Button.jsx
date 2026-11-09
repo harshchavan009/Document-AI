@@ -15,7 +15,7 @@ export function Button({
   ...props
 }) {
   const baseStyles =
-    "inline-flex items-center justify-center font-medium transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/80 focus-visible:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none rounded-[5px] tracking-tight cursor-pointer";
+    "inline-flex items-center justify-center font-medium whitespace-nowrap transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/80 focus-visible:ring-offset-1 disabled:opacity-50 disabled:pointer-events-none rounded-[5px] tracking-tight cursor-pointer";
 
   const sizeStyles = {
     xs: "h-6 px-2 text-[11px] gap-1",
@@ -52,7 +52,7 @@ export function Button({
       ) : Icon ? (
         <Icon className="w-3.5 h-3.5 shrink-0" />
       ) : null}
-      {children && <span>{children}</span>}
+      {children && <span className="truncate">{children}</span>}
       {!loading && IconRight && <IconRight className="w-3.5 h-3.5 shrink-0" />}
     </button>
   );

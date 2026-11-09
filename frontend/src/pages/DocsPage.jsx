@@ -46,6 +46,30 @@ export function DocsPage() {
       }
     }
     loadConfig();
+
+    // Scrollspy with IntersectionObserver
+    const sectionElements = document.querySelectorAll("main section[id]");
+    if (!sectionElements.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleEntries = entries.filter((e) => e.isIntersecting);
+        if (visibleEntries.length > 0) {
+          visibleEntries.sort(
+            (a, b) =>
+              Math.abs(a.boundingClientRect.top) - Math.abs(b.boundingClientRect.top)
+          );
+          setActiveSection(visibleEntries[0].target.id);
+        }
+      },
+      {
+        rootMargin: "-80px 0px -60% 0px",
+        threshold: [0, 0.2, 0.5],
+      }
+    );
+
+    sectionElements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   const copyCode = (text, id) => {
@@ -56,39 +80,24 @@ export function DocsPage() {
 
   const navSections = [
     {
-      group: "Getting Started",
+      group: "User Guide",
       items: [
         { id: "overview", label: "Overview & Philosophy" },
         { id: "quickstart", label: "Quickstart Workflow" },
-      ],
-    },
-    {
-      group: "Architecture & Pipeline",
-      items: [
-        { id: "ingestion", label: "Ingestion & Extraction" },
-        { id: "chunking", label: "Chunking & Token Windows" },
-        { id: "vector-store", label: "Embeddings & ChromaDB" },
-      ],
-    },
-    {
-      group: "Citation Grounding",
-      items: [
-        { id: "verification", label: "Server-Side Verification" },
+        { id: "ingestion", label: "Ingestion & File Validation" },
+        { id: "verification", label: "Grounded Research & Citations" },
         { id: "boundary", label: "Untrusted Data Boundaries" },
         { id: "refusal", label: "Truthful Refusal Mechanism" },
       ],
     },
     {
-      group: "API Reference",
+      group: "Technical Reference",
       items: [
-        { id: "api-endpoints", label: "Core Endpoints" },
+        { id: "chunking", label: "Sentence Chunking & Tokens" },
+        { id: "vector-store", label: "Embeddings & ChromaDB" },
+        { id: "api-endpoints", label: "Core API Endpoints" },
         { id: "runtime-config", label: "Live System Parameters" },
-      ],
-    },
-    {
-      group: "Security & Storage",
-      items: [
-        { id: "session-isolation", label: "Visitor Identity Model" },
+        { id: "session-isolation", label: "Visitor Identity & CSRF" },
         { id: "deletion-lifecycle", label: "Data Purging & Lifecycle" },
       ],
     },
@@ -166,7 +175,7 @@ export function DocsPage() {
           <nav className="space-y-5 text-xs">
             {filteredNav.map((group) => (
               <div key={group.group} className="space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-content-muted font-semibold block px-2 mb-1">
+                <span className="text-xs font-semibold text-content-primary block px-2 mb-1.5">
                   {group.group}
                 </span>
                 {group.items.map((item) => (
@@ -214,10 +223,10 @@ export function DocsPage() {
             </h2>
             <ol className="space-y-3 text-xs sm:text-sm text-content-secondary leading-relaxed list-decimal list-inside">
               <li>
-                <strong>Ingest Documents:</strong> Navigate to the <Link to="/workspace/documents" className="text-accent hover:underline font-medium">Document Library</Link> and upload genuine PDF or TXT files, or click <em>Load Sample Paper</em> to ingest the bundled academic paper.
+                <strong>Ingest Documents:</strong> Navigate to the <Link to="/workspace/documents" className="text-accent hover:underline font-medium">Document Library</Link> and upload genuine PDF or TXT files, or click <em>Try sample paper</em> to ingest the bundled academic paper.
               </li>
               <li>
-                <strong>Scope Research:</strong> In the <Link to="/workspace/research" className="text-accent hover:underline font-medium">Research Canvas</Link>, select one or more ready documents in the left Source Scope checklist.
+                <strong>Scope Research:</strong> In the <Link to="/workspace/research" className="text-accent hover:underline font-medium">AI Research Desk</Link>, select one or more ready documents in the left Source Scope checklist.
               </li>
               <li>
                 <strong>Ask Questions:</strong> Select one of the dynamic suggested inquiries or formulate your own research query. The engine streams the answer with inline citations.

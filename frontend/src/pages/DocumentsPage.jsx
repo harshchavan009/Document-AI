@@ -283,10 +283,11 @@ export function DocumentsPage() {
   // Filter and sort computation
   const filteredDocuments = documents
     .filter((doc) => {
+      const docStatus = (doc.status || "").toLowerCase();
       if (search && !doc.filename.toLowerCase().includes(search.toLowerCase())) {
         return false;
       }
-      if (statusFilter === "ready" && doc.status.toLowerCase() !== "ready") {
+      if (statusFilter === "ready" && docStatus !== "ready") {
         return false;
       }
       if (
@@ -297,11 +298,24 @@ export function DocumentsPage() {
           "chunking",
           "generating embeddings",
           "indexing",
-        ].includes(doc.status.toLowerCase())
+        ].includes(docStatus)
       ) {
         return false;
       }
-      if (statusFilter === "failed" && doc.status.toLowerCase() !== "failed") {
+      if (statusFilter === "failed" && docStatus !== "failed") {
+        return false;
+      }
+      // Specific granular backend stage filter
+      if (
+        [
+          "uploaded",
+          "extracting",
+          "chunking",
+          "generating embeddings",
+          "indexing",
+        ].includes(statusFilter) &&
+        docStatus !== statusFilter
+      ) {
         return false;
       }
       return true;
@@ -372,35 +386,38 @@ export function DocumentsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            size="xs"
-            variant="secondary"
-            loading={ingestingSample}
-            icon={BookOpen}
-            onClick={handleIngestSample}
-          >
-            Load Sample Paper
-          </Button>
+        {/* Top Actions: Shown when documents exist */}
+        {documents.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Button
+              size="xs"
+              variant="secondary"
+              loading={ingestingSample}
+              icon={BookOpen}
+              onClick={handleIngestSample}
+            >
+              Try sample paper
+            </Button>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept={config?.allowed_extensions?.join(",") || ".pdf,.txt"}
-            onChange={(e) => handleUploadFiles(Array.from(e.target.files || []))}
-            className="hidden"
-          />
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept={config?.allowed_extensions?.join(",") || ".pdf,.txt"}
+              onChange={(e) => handleUploadFiles(Array.from(e.target.files || []))}
+              className="hidden"
+            />
 
-          <Button
-            size="xs"
-            variant="primary"
-            icon={Upload}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Add Documents
-          </Button>
-        </div>
+            <Button
+              size="xs"
+              variant="primary"
+              icon={Upload}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Add documents
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Filter and Search Bar (Notion style) */}
@@ -427,27 +444,43 @@ export function DocumentsPage() {
           )}
         </div>
 
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 bg-surface-subtle p-0.5 rounded-[5px] border border-border text-xs">
-          {[
-            { id: "all", label: "All" },
-            { id: "ready", label: "Ready" },
-            { id: "processing", label: "Processing" },
-            { id: "failed", label: "Failed" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setStatusFilter(tab.id)}
-              className={`px-2.5 py-1 rounded-[4px] font-medium transition-colors cursor-pointer ${
-                statusFilter === tab.id
-                  ? "bg-surface text-content-primary shadow-xs font-semibold"
-                  : "text-content-secondary hover:text-content-primary"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        {/* Status Filter Tabs & Granular Backend Stages */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <div className="flex items-center gap-1 bg-surface-subtle p-0.5 rounded-[5px] border border-border">
+            {[
+              { id: "all", label: "All" },
+              { id: "ready", label: "Ready" },
+              { id: "processing", label: "In Progress" },
+              { id: "failed", label: "Failed" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStatusFilter(tab.id)}
+                className={`px-2.5 py-1 rounded-[4px] font-medium transition-colors cursor-pointer ${
+                  statusFilter === tab.id
+                    ? "bg-surface text-content-primary shadow-xs font-semibold"
+                    : "text-content-secondary hover:text-content-primary"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <select
+            value={["all", "ready", "processing", "failed"].includes(statusFilter) ? "" : statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value || "processing")}
+            className="h-7 px-2 text-[11px] bg-surface-subtle border border-border rounded-[5px] text-content-secondary focus:outline-none focus:border-accent cursor-pointer"
+            aria-label="Filter by individual processing stage"
+          >
+            <option value="">Specific stage...</option>
+            <option value="uploaded">1. Uploaded (Queued)</option>
+            <option value="extracting">2. Extracting</option>
+            <option value="chunking">3. Chunking</option>
+            <option value="generating embeddings">4. Generating embeddings</option>
+            <option value="indexing">5. Indexing</option>
+          </select>
         </div>
       </div>
 
@@ -474,7 +507,7 @@ export function DocumentsPage() {
               ? "Drag and drop your research PDFs or text files anywhere on this page, or try our sample academic paper."
               : "Try adjusting your search keywords or clearing the status filter."
           }
-          actionLabel={documents.length === 0 ? "Add Documents" : "Clear Filter"}
+          actionLabel={documents.length === 0 ? "Add documents" : "Clear filter"}
           actionIcon={documents.length === 0 ? Upload : undefined}
           onAction={() => {
             if (documents.length === 0) {
@@ -484,7 +517,7 @@ export function DocumentsPage() {
               setStatusFilter("all");
             }
           }}
-          secondaryActionLabel={documents.length === 0 ? "Load Sample Paper" : undefined}
+          secondaryActionLabel={documents.length === 0 ? "Try sample paper" : undefined}
           onSecondaryAction={documents.length === 0 ? handleIngestSample : undefined}
         />
       ) : (

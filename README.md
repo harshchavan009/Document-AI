@@ -9,13 +9,13 @@
 
 ## 1. Introduction
 
-DocuMind AI is an engineered document intelligence and verifiable question-answering platform. Designed for researchers, clinicians, students, and knowledge workers, DocuMind AI extracts, indexes, and searches multi-page PDF and text documents, providing synthesized answers backed by server-verified, page-level citations. The physical design metaphor is a scholarly reading room rather than a consumer chatbot, emphasizing verifiable evidence, calm typography, and zero hallucinated references.
+DocuMind AI is an engineered document intelligence and verifiable question-answering platform. Designed for researchers, policy analysts, engineers, students, and knowledge workers, DocuMind AI extracts, indexes, and searches multi-page PDF and text documents, providing synthesized answers backed by server-verified, page-level citations. The physical design metaphor is a scholarly reading room rather than a consumer chatbot, emphasizing verifiable evidence, calm typography, and zero hallucinated references.
 
 ---
 
 ## 2. Problem Statement
 
-Modern knowledge workers face severe information overload when analyzing dense technical papers, clinical guidelines, and legal documents:
+Modern knowledge workers face severe information overload when analyzing dense technical papers, regulatory guidelines, and research documents:
 - **Keyword Search Limitations:** Traditional search engines rely on exact keyword matches, failing to capture semantic synonyms, conceptual relationships, or multi-document syntheses.
 - **LLM Hallucinations:** Commercial conversational chatbots generate plausible-sounding text from broad training weights, frequently inventing page numbers, misattributing author quotes, or extrapolating unsupported claims.
 - **Lack of Provenance:** Standard RAG demos present answers without clickable provenance, forcing researchers to manually verify facts by re-reading hundreds of pages.
@@ -26,7 +26,7 @@ Modern knowledge workers face severe information overload when analyzing dense t
 ## 3. Objectives
 
 The DocuMind AI system was engineered to fulfill five rigorous product objectives:
-1. **Deterministic Grounding:** Restrict AI answer generation strictly to retrieved candidate chunks from active workspace documents.
+1. **Retrieval Grounding:** Restrict AI answer generation strictly to retrieved candidate chunks from active workspace documents, verified server-side.
 2. **Server-Side Citation Verification:** Validate every bracketed citation token (`[1]`, `[2]`) emitted by the generation model against actual candidate chunks, stripping any ungrounded references before they reach the user.
 3. **Calibrated Truthful Refusal:** Abort answer generation and inform the user when retrieved context diverges from the query (cosine distance > 0.65).
 4. **Session Isolation by Design:** Isolate documents, vector collections, and chat threads to signed, private visitor sessions with an automated 7-day data retention reaper.
@@ -38,11 +38,20 @@ The DocuMind AI system was engineered to fulfill five rigorous product objective
 
 - **Editorial Two-Column Hero with Live Ingestion:** Visitors can drop a research PDF or load the sample paper directly from the public landing page to initiate a research session in seconds.
 - **Notion-Style Document Library:** Multi-file drag and drop, SHA-256 duplicate detection, file size tracking, column sorting, batch selection, and inline retry for interrupted documents.
+
+![Document Library](docs/screenshots-evidence/library_statuses_desktop_light.png)
+
 - **NotebookLM-Inspired 3-Zone Research Desk:**
   - *Left Zone:* Scoped document checklist with one-click toggles and onboarding paper loading.
   - *Center Zone:* Conversational canvas rendering serif-typeset answers, copy controls, and clear thread actions.
   - *Right Zone:* Dual-tab inspector featuring expandable passage evidence cards and an integrated PDF.js canvas reader.
+
+![AI Research Desk](docs/screenshots-evidence/streamed_answer_citations_desktop_light.png)
+
 - **Split Passage Highlighting:** Clicking an inline citation chip slides open the evidence inspector, jumps to the exact cited page, and displays the supporting passage.
+
+![Evidence Inspector and Document Reader](docs/screenshots-evidence/citation_opened_drawer_desktop_light.png)
+
 - **Multi-Turn Conversational Query Rewriting:** Automatically expands pronouns and context across prior conversational turns into a standalone retrieval vector.
 - **Data Lifecycle Governance:** Users can download an in-memory ZIP archive of their session data or permanently purge all database records, disk files, and vector indices with one click.
 
@@ -59,7 +68,7 @@ The DocuMind AI system was engineered to fulfill five rigorous product objective
   - Dense Embeddings: `text-embedding-004` (768 dimensions, `RETRIEVAL_DOCUMENT` and `RETRIEVAL_QUERY` task types)
   - Answer Synthesis: `gemini-2.5-flash` with streaming tokens via Server-Sent Events (SSE)
 - **Rate Limiting & Safety:** `slowapi` rate limiting and a circuit breaker protecting API quotas
-- **Test Harness:** Pytest 9.2 with 44 unit, integration, and tenant isolation tests
+- **Test Harness:** Pytest 9.2 with 46 unit, integration, tenant isolation, and CSRF tests (100% passing)
 
 ### Frontend
 - **Framework:** React 18 single-page application bundled with Vite 5.4
@@ -321,9 +330,9 @@ Document-AI/
 │   └── chroma/                   # ChromaDB vector index
 └── docs/                         # Technical specifications and audit reports
     ├── requirements-compliance.md # Step 1: Traceability matrix across 55 requirements
-    ├── compliance-fix-plan.md    # Step 2: Repair plan and severity rankings
-    ├── launch-ready.md           # Step 3: Production release guide
+    ├── ship-plan.md              # Step 2: Repair plan and severity rankings
     ├── retrieval-evaluation.md   # Distance threshold calibration and refusal scenarios
+    ├── security-review.md        # Security audit and git history secret scan report
     └── api-documentation.md      # Detailed API contract
 ```
 
@@ -399,14 +408,14 @@ Open your browser at `http://localhost:5173`.
 ## 20. Testing
 
 ### Backend Test Suite (Pytest)
-Run the full 44-test backend verification suite:
+Run the full 46-test backend verification suite:
 ```bash
 source .venv/bin/activate
 PYTHONPATH=. pytest backend/tests -v
 ```
 
 ### Accessibility Audit (WCAG 2.1 AA)
-Run the automated `axe-core` scan across all 10 application routes:
+Run the automated `axe-core` scan across all 9 application routes in Light and Dark themes (18 sweeps, 0 violations):
 ```bash
 cd frontend
 node tests/a11y.test.js
@@ -418,6 +427,16 @@ Run the automated browser test suite across 9 complete user journeys:
 cd frontend
 node tests/e2e.test.js
 ```
+
+### Truthful Refusal on Out-of-Domain Inquiries
+When a query diverges from active document content (cosine distance > 0.65), DocuMind AI refuses honestly instead of hallucinating:
+
+![Truthful Refusal](docs/screenshots-evidence/insufficient_evidence_refusal_desktop_light.png)
+
+### Defensive Ingestion & Extraction Validation
+Corrupted documents, spoofed extensions, and scanned image PDFs without embedded text layers are rejected with clear recovery guidance:
+
+![Upload Failure](docs/screenshots-evidence/upload_failure_desktop_light.png)
 
 ### Repository Hygiene Scanner
 Verify strict adherence to the Zero Em Dash rule and check for uncommitted secrets:

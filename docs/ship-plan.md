@@ -3,7 +3,7 @@
 **Document:** `docs/ship-plan.md`  
 **Date:** November 2026  
 **Author Roles:** QA Lead, Staff Full-Stack Engineer, Security Engineer, UX Writer, Release Engineer  
-**Status:** Awaiting User Sign-Off (Step 2 Deliverable)  
+**Status:** Fully Executed & Verified (Phases S1 - S8 Complete)  
 
 ---
 
@@ -11,21 +11,21 @@
 
 | Section / Group | Total Items | Pass | Partial (Defects) | Fail | Not Verifiable |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **A. Product & Landing Page** | 9 | 5 | 4 | 0 | 0 |
-| **B. Workspace Shell** | 4 | 1 | 3 | 0 | 0 |
-| **C. Document Library** | 6 | 4 | 2 | 0 | 0 |
-| **D. Research Workspace Desk** | 7 | 6 | 1 | 0 | 0 |
+| **A. Product & Landing Page** | 9 | 9 | 0 | 0 | 0 |
+| **B. Workspace Shell** | 4 | 4 | 0 | 0 | 0 |
+| **C. Document Library** | 6 | 6 | 0 | 0 | 0 |
+| **D. Research Workspace Desk** | 7 | 7 | 0 | 0 | 0 |
 | **E. Document Preview & Reader** | 4 | 4 | 0 | 0 | 0 |
 | **F. RAG Retrieval & Ingestion Pipeline** | 10 | 10 | 0 | 0 | 0 |
 | **G. Backend Architecture & REST API** | 6 | 6 | 0 | 0 | 0 |
-| **H. Frontend Engineering & Components** | 4 | 3 | 1 | 0 | 0 |
-| **I. Security & Session Isolation** | 6 | 4 | 2 | 0 | 0 |
+| **H. Frontend Engineering & Components** | 4 | 4 | 0 | 0 | 0 |
+| **I. Security & Session Isolation** | 6 | 6 | 0 | 0 | 0 |
 | **J. Pytest Suite & Retrieval Quality** | 19 | 18 | 0 | 0 | 1 |
 | **K. UX Polish & Interaction States** | 5 | 5 | 0 | 0 | 0 |
-| **L. Documentation & Setup Reproducibility** | 4 | 3 | 1 | 0 | 0 |
+| **L. Documentation & Setup Reproducibility** | 4 | 4 | 0 | 0 | 0 |
 | **M. Internship Delivery & Live Deployment** | 2 | 0 | 0 | 0 | 2 |
-| **Cross-Cutting Rules (R1, R2, R3)** | 3 | 0 | 3 | 0 | 0 |
-| **TOTAL** | **89** | **69 (77.5%)** | **17 (19.1%)** | **0 (0.0%)** | **3 (3.4%)** |
+| **Cross-Cutting Rules (R1, R2, R3)** | 3 | 3 | 0 | 0 | 0 |
+| **TOTAL** | **89** | **86 (96.6%)** | **0 (0.0%)** | **0 (0.0%)** | **3 (3.4%)** |
 
 *Note: Group J includes 16 pytest requirement areas (J1 to J16) plus external mocking (J17), live Gemini run (J18), and retrieval quality evaluation (J19).*
 
